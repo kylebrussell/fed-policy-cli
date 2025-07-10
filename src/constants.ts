@@ -32,3 +32,19 @@ export const getFredApiKey = (cliApiKey?: string): string => {
 
 // Path for the local database
 export const DB_PATH = './data/economic_data.sqlite';
+
+// Data quality constants
+export const DATA_QUALITY = {
+  // Cut-off date for reliable Fed Funds Rate data (pre-1960 data shows unrealistic volatility)
+  RELIABLE_FED_DATA_START: '1960-01-01',
+  
+  // Maximum plausible daily Fed policy change in basis points
+  MAX_PLAUSIBLE_DAILY_CHANGE_BPS: 75,
+  
+  // Data quality eras
+  QUALITY_ERAS: {
+    MODERN_RELIABLE: { start: '1990-01-01', end: '2030-12-31', reliability: 'high' },
+    EARLY_RELIABLE: { start: '1960-01-01', end: '1989-12-31', reliability: 'medium' },
+    UNRELIABLE: { start: '1948-01-01', end: '1959-12-31', reliability: 'low' }
+  }
+};

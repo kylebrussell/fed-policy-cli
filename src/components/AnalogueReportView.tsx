@@ -35,6 +35,20 @@ const AnalogueReportView: React.FC<Props> = ({ analogues, indicators }) => {
           <Text color="cyan" italic>
             Economic Era: {getEconomicEra(analogue.startDate).name} ({getEconomicEra(analogue.startDate).timeframe})
           </Text>
+          
+          {analogue.dataQuality && analogue.dataQuality.warnings.length > 0 && (
+            <Box flexDirection="column" marginTop={1}>
+              <Text color="yellow" bold>Data Quality:</Text>
+              <Text color="yellow">
+                Reliability: {analogue.dataQuality.reliability.toUpperCase()}
+              </Text>
+              {analogue.dataQuality.warnings.map((warning, idx) => (
+                <Text key={idx} color="yellow" italic>
+                  ⚠ {warning}
+                </Text>
+              ))}
+            </Box>
+          )}
 
           {indicators.map(indicator => (
             <Box flexDirection="column" marginTop={1} key={indicator.id}>

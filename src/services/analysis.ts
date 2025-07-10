@@ -7,6 +7,7 @@ import {
   WeightedIndicator,
 } from '../types';
 import { calculateDtwDistance } from '../utils/similarity';
+import { DATA_QUALITY } from '../constants';
 
 /**
  * Analyzes the fed_funds_rate within a given data period to extract meaningful policy actions.
@@ -172,6 +173,67 @@ export function getEconomicEra(startDate: string): { name: string; timeframe: st
 }
 
 /**
+ * Assesses data quality for a given date period.
+ * @param startDate - The start date of the historical period
+ * @param endDate - The end date of the historical period
+ * @returns Data quality assessment
+ */
+export function assessDataQuality(startDate: string, endDate?: string): {
+  reliability: 'high' | 'medium' | 'low';
+  warnings: string[];
+  shouldExclude: boolean;
+} {
+  const date = new Date(startDate);
+  const warnings: string[] = [];
+  let reliability: 'high' | 'medium' | 'low' = 'high';
+  let shouldExclude = false;
+
+  // Check against data quality eras
+  const qualityEra = Object.values(DATA_QUALITY.QUALITY_ERAS).find(era => 
+    date >= new Date(era.start) && date <= new Date(era.end)
+  );
+
+  if (qualityEra) {
+    reliability = qualityEra.reliability as 'high' | 'medium' | 'low';
+    
+    if (reliability === 'low') {
+      warnings.push('Pre-1960 data may contain unrealistic Fed policy volatility');
+      shouldExclude = true; // Exclude by default, can be overridden with flags
+    } else if (reliability === 'medium') {
+      warnings.push('Early Fed data (1960s-1980s) may have some quality issues');
+    }
+  }
+
+  // Check if period is before reliable Fed data
+  if (date < new Date(DATA_QUALITY.RELIABLE_FED_DATA_START)) {
+    warnings.push('Period predates reliable Fed Funds Rate data (1960+)');
+    shouldExclude = true;
+  }
+
+  return { reliability, warnings, shouldExclude };
+}
+
+/**
+ * Filters historical data to exclude periods with known data quality issues.
+ * @param data - Array of economic data points
+ * @param excludeUnreliable - Whether to exclude unreliable periods (default: true)
+ * @returns Filtered data array
+ */
+export function filterDataQuality(
+  data: EconomicDataPoint[], 
+  excludeUnreliable: boolean = true
+): EconomicDataPoint[] {
+  if (!excludeUnreliable) {
+    return data; // Return all data if filtering is disabled
+  }
+
+  return data.filter(point => {
+    const quality = assessDataQuality(point.date);
+    return !quality.shouldExclude;
+  });
+}
+
+/**
  * Applies temporal diversity filtering to prevent overlapping periods in results.
  * Ensures minimum time gap between returned analogues for meaningful historical diversity.
  * @param sortedAnalogues - Analogues sorted by similarity score (best first)
@@ -231,12 +293,15 @@ export function findAnalogues(
   params: ScenarioParams,
   topN: number = 5
 ): HistoricalAnalogue[] {
-  const { indicators } = params;
+  const { indicators, excludeUnreliableData = true } = params;
   const windowSize = targetScenario.length;
 
   if (windowSize === 0 || indicators.length === 0) {
     return [];
   }
+
+  // Apply data quality filtering to historical data
+  const filteredData = filterDataQuality(allData, excludeUnreliableData);
 
   // 1. Pre-extract the series for the target window for each indicator
   const targetSeriesByIndicator: { [id: string]: number[] } = {};
@@ -245,10 +310,10 @@ export function findAnalogues(
   }
 
   // 2. Iterate through historical windows and calculate weighted DTW distance with enhanced diversity
-  const analogues: Omit<HistoricalAnalogue, 'fedPolicyActions'>[] = [];
+  const analogues: Omit<HistoricalAnalogue, 'fedPolicyActions' | 'dataQuality'>[] = [];
   
-  for (let i = 0; i <= allData.length - windowSize; i++) {
-    const historicalWindow = allData.slice(i, i + windowSize);
+  for (let i = 0; i <= filteredData.length - windowSize; i++) {
+    const historicalWindow = filteredData.slice(i, i + windowSize);
 
     // Avoid comparing the scenario with itself by checking the start date
     if (historicalWindow[0].date === targetScenario[0].date) {
@@ -289,7 +354,16 @@ export function findAnalogues(
 
   const detailedAnalogues: HistoricalAnalogue[] = diverseAnalogues.map(analogue => {
     const fedPolicyActions = extractFedPolicyActions(analogue.data);
-    return { ...analogue, fedPolicyActions };
+    const dataQualityAssessment = assessDataQuality(analogue.startDate);
+    
+    return { 
+      ...analogue, 
+      fedPolicyActions,
+      dataQuality: {
+        reliability: dataQualityAssessment.reliability,
+        warnings: dataQualityAssessment.warnings
+      }
+    };
   });
 
   return detailedAnalogues;

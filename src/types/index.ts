@@ -16,6 +16,7 @@ export interface ScenarioParams {
   indicators: WeightedIndicator[];
   windowMonths: number;
   minTimeGapMonths?: number; // Optional minimum gap between analogues (default: 6 months)
+  excludeUnreliableData?: boolean; // Optional flag to exclude pre-1960 data (default: true)
 }
 
 export interface HistoricalAnalogue {
@@ -24,6 +25,10 @@ export interface HistoricalAnalogue {
   similarityScore: number;
   data: EconomicDataPoint[];
   fedPolicyActions: FedPolicyAction[];
+  dataQuality?: {
+    reliability: 'high' | 'medium' | 'low';
+    warnings: string[];
+  };
 }
 
 export interface FedPolicyAction {

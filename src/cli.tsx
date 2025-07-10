@@ -62,6 +62,7 @@ const App = ({ command, params, indicators }: AppProps) => {
           const scenarioParams: ScenarioParams = {
             indicators,
             windowMonths: params.months as number,
+            excludeUnreliableData: !(params['include-unreliable'] as boolean),
           };
 
           const results = findAnalogues(allData, targetScenario, scenarioParams, params.top as number);
@@ -124,6 +125,12 @@ yargs(hideBin(process.argv))
         type: 'number',
         default: 5,
         alias: 't',
+      })
+      .option('include-unreliable', {
+        describe: 'Include pre-1960 data with potentially unreliable Fed policy data',
+        type: 'boolean',
+        default: false,
+        alias: 'u',
       });
   }, (argv) => {
     const indicators: WeightedIndicator[] = (Array.isArray(argv.indicator) ? argv.indicator : [argv.indicator]).map(ind => {
