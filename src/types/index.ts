@@ -59,3 +59,9 @@ export interface FedPolicyAction {
   action: 'HIKE' | 'CUT' | 'HOLD';
   changeBps?: number;
 }
+
+export interface FredSeriesMetadata {
+  name: string;
+  type: 'level' | 'yoy' | 'yoy_quarterly';
+  frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly';
+}

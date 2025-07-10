@@ -11,6 +11,63 @@ import { calculateDtwDistance } from '../utils/similarity';
 import { DATA_QUALITY, PERIOD_EXCLUSION } from '../constants';
 
 /**
+ * Samples economic data at monthly intervals to align with economic time scales.
+ * Takes the first data point of each calendar month to create a proper monthly series.
+ * @param data - Daily economic data points
+ * @returns Monthly sampled data points
+ */
+export function sampleMonthlyData(data: EconomicDataPoint[]): EconomicDataPoint[] {
+  if (data.length === 0) return [];
+
+  const monthlyData: EconomicDataPoint[] = [];
+  let currentMonth = '';
+
+  for (const point of data) {
+    const monthKey = point.date.substring(0, 7); // YYYY-MM format
+    
+    // Add first data point of each month
+    if (monthKey !== currentMonth) {
+      monthlyData.push(point);
+      currentMonth = monthKey;
+    }
+  }
+
+  return monthlyData;
+}
+
+/**
+ * Gets the last N calendar months from economic data.
+ * Properly samples monthly data instead of using daily data points.
+ * @param data - All economic data points
+ * @param months - Number of months to retrieve
+ * @returns Monthly sampled data for the specified number of months
+ */
+export function getLastNMonths(data: EconomicDataPoint[], months: number): EconomicDataPoint[] {
+  const monthlyData = sampleMonthlyData(data);
+  return monthlyData.slice(-months);
+}
+
+/**
+ * Extracts a specific historical period from economic data.
+ * Samples monthly data for the specified date range.
+ * @param data - All economic data points
+ * @param startYearMonth - Start date in YYYY-MM format
+ * @param endYearMonth - End date in YYYY-MM format
+ * @returns Monthly sampled data for the specified period
+ */
+export function getTargetPeriod(data: EconomicDataPoint[], startYearMonth: string, endYearMonth: string): EconomicDataPoint[] {
+  const monthlyData = sampleMonthlyData(data);
+  
+  // Filter to the specified date range
+  const targetData = monthlyData.filter(point => {
+    const pointMonth = point.date.substring(0, 7); // YYYY-MM format
+    return pointMonth >= startYearMonth && pointMonth <= endYearMonth;
+  });
+  
+  return targetData;
+}
+
+/**
  * Analyzes the fed_funds_rate within a given data period to extract meaningful policy actions.
  * Filters out daily noise and groups consecutive changes to show realistic Fed policy decisions.
  * @param periodData - A slice of economic data for a specific period.
@@ -404,6 +461,10 @@ export function findAnalogues(
   // Apply period exclusion filtering
   filteredData = applyPeriodExclusions(filteredData, params);
 
+  // **CRITICAL ECONOMIC TIME SCALE FIX**: Sample historical data at monthly intervals
+  // This ensures we compare economic patterns at proper time scales, not daily noise
+  const monthlyFilteredData = sampleMonthlyData(filteredData);
+
   // 1. Pre-extract the series for the target window for each indicator
   const targetSeriesByIndicator: { [id: string]: number[] } = {};
   for (const indicator of indicators) {
@@ -413,8 +474,9 @@ export function findAnalogues(
   // 2. Iterate through historical windows and calculate weighted DTW distance with enhanced diversity
   const analogues: Omit<HistoricalAnalogue, 'fedPolicyActions' | 'dataQuality'>[] = [];
   
-  for (let i = 0; i <= filteredData.length - windowSize; i++) {
-    const historicalWindow = filteredData.slice(i, i + windowSize);
+  // Use monthly data for sliding window analysis
+  for (let i = 0; i <= monthlyFilteredData.length - windowSize; i++) {
+    const historicalWindow = monthlyFilteredData.slice(i, i + windowSize);
 
     // Avoid comparing the scenario with itself by checking the start date
     if (historicalWindow[0].date === targetScenario[0].date) {

@@ -6,8 +6,8 @@ import yargs, { Arguments } from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { fetchAllEconomicData } from './services/api';
 import { initDatabase, insertData, getAllData } from './services/database';
-import { findAnalogues } from './services/analysis';
-import { ScenarioParams, HistoricalAnalogue, WeightedIndicator } from './types';
+import { findAnalogues, getLastNMonths, getTargetPeriod } from './services/analysis';
+import { ScenarioParams, HistoricalAnalogue, WeightedIndicator, EconomicDataPoint } from './types';
 import { FRED_SERIES, ECONOMIC_TEMPLATES } from './constants';
 import LoadingSpinner from './components/Spinner';
 import StatusMessage from './components/StatusMessage';
@@ -51,17 +51,38 @@ const App = ({ command, params, indicators }: AppProps) => {
           setStatus('Loading all historical economic data...');
           const allData = await getAllData();
           
-          if (allData.length < (params.months as number)) {
-            setError(`Not enough data. Need at least ${params.months} months. Run \`update-data\` first.`);
-            return;
+          // Determine target scenario based on user input
+          let targetScenario: EconomicDataPoint[];
+          let statusMessage: string;
+          
+          if (params['target-period']) {
+            // Use custom target period
+            const targetPeriod = params['target-period'] as string;
+            const periodRegex = /^(\d{4}-\d{2})\s+to\s+(\d{4}-\d{2})$/;
+            const match = targetPeriod.match(periodRegex);
+            const [, startDate, endDate] = match!; // Already validated in .check()
+            
+            targetScenario = getTargetPeriod(allData, startDate, endDate);
+            if (targetScenario.length === 0) {
+              setError(`No data found for period ${startDate} to ${endDate}. Check date range and run \`update-data\` if needed.`);
+              return;
+            }
+            statusMessage = `Analyzing ${targetScenario.length} months from ${startDate} to ${endDate} using ${indicators.length} indicators...`;
+          } else {
+            // Use recent months (default behavior)
+            targetScenario = getLastNMonths(allData, params.months as number);
+            if (targetScenario.length < (params.months as number)) {
+              setError(`Not enough monthly data. Need at least ${params.months} months. Found ${targetScenario.length} months. Run \`update-data\` first.`);
+              return;
+            }
+            statusMessage = `Analyzing data against the last ${params.months} months using ${indicators.length} indicators...`;
           }
-
-          const targetScenario = allData.slice(-(params.months as number));
-          setStatus(`Analyzing data against the last ${params.months} months using ${indicators.length} indicators...`);
+          
+          setStatus(statusMessage);
 
           const scenarioParams: ScenarioParams = {
             indicators,
-            windowMonths: params.months as number,
+            windowMonths: targetScenario.length,
             excludeUnreliableData: !(params['include-unreliable'] as boolean),
             excludeRecentYears: params['exclude-recent-years'] as number | undefined,
             focusEras: params['focus-era'] ? (Array.isArray(params['focus-era']) ? params['focus-era'] : [params['focus-era']]) as string[] : undefined,
@@ -133,10 +154,15 @@ yargs(hideBin(process.argv))
         alias: 'i',
       })
       .option('months', {
-        describe: 'Number of recent months to use as the target scenario',
+        describe: 'Number of recent months to use as the target scenario (ignored if --target-period is used)',
         type: 'number',
         default: 12,
         alias: 'm',
+      })
+      .option('target-period', {
+        describe: 'Specific historical period to analyze (format: YYYY-MM to YYYY-MM, e.g., "2008-01 to 2009-12")',
+        type: 'string',
+        alias: 'p',
       })
       .option('top', {
         describe: 'Number of top analogues to return',
@@ -173,6 +199,22 @@ yargs(hideBin(process.argv))
         if (argv.template && argv.indicator) {
           throw new Error('Cannot use both --template and --indicator options together');
         }
+        
+        // Validate target period format if provided
+        if (argv['target-period']) {
+          const targetPeriod = argv['target-period'] as string;
+          const periodRegex = /^(\d{4}-\d{2})\s+to\s+(\d{4}-\d{2})$/;
+          const match = targetPeriod.match(periodRegex);
+          if (!match) {
+            throw new Error('Target period must be in format "YYYY-MM to YYYY-MM" (e.g., "2008-01 to 2009-12")');
+          }
+          
+          const [, startDate, endDate] = match;
+          if (startDate >= endDate) {
+            throw new Error('Target period start date must be before end date');
+          }
+        }
+        
         return true;
       });
   }, (argv) => {

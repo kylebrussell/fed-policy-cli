@@ -1,14 +1,14 @@
 // /src/constants.ts
 
-// FRED API Series IDs and metadata
+// FRED API Series IDs and metadata with economic frequency information
 export const FRED_SERIES = {
-  UNRATE: { name: 'Unemployment Rate', type: 'level' },
-  CPIAUCSL: { name: 'CPI (Inflation)', type: 'yoy' },
-  DFF: { name: 'Federal Funds Rate', type: 'level' },
-  PCEPI: { name: 'PCE (Core Inflation)', type: 'yoy' },
-  GDPC1: { name: 'Real GDP', type: 'yoy_quarterly' },
-  T10Y2Y: { name: '10-2 Year Treasury Spread', type: 'level' },
-  ICSA: { name: 'Initial Claims', type: 'level' },
+  UNRATE: { name: 'Unemployment Rate', type: 'level', frequency: 'monthly' },
+  CPIAUCSL: { name: 'CPI (Inflation)', type: 'yoy', frequency: 'monthly' },
+  DFF: { name: 'Federal Funds Rate', type: 'level', frequency: 'daily' },
+  PCEPI: { name: 'PCE (Core Inflation)', type: 'yoy', frequency: 'monthly' },
+  GDPC1: { name: 'Real GDP', type: 'yoy_quarterly', frequency: 'quarterly' },
+  T10Y2Y: { name: '10-2 Year Treasury Spread', type: 'level', frequency: 'daily' },
+  ICSA: { name: 'Initial Claims', type: 'level', frequency: 'weekly' },
 };
 
 // FRED API base URL
