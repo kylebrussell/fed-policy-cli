@@ -5,9 +5,10 @@ import {
   HistoricalAnalogue,
   FedPolicyAction,
   WeightedIndicator,
+  DateRange,
 } from '../types';
 import { calculateDtwDistance } from '../utils/similarity';
-import { DATA_QUALITY } from '../constants';
+import { DATA_QUALITY, PERIOD_EXCLUSION } from '../constants';
 
 /**
  * Analyzes the fed_funds_rate within a given data period to extract meaningful policy actions.
@@ -234,6 +235,103 @@ export function filterDataQuality(
 }
 
 /**
+ * Resolves era aliases to internal era keys.
+ * @param eraName - User-provided era name or alias
+ * @returns Internal era key or null if not found
+ */
+function resolveEraAlias(eraName: string): string | null {
+  const normalizedName = eraName.toLowerCase().trim();
+  return PERIOD_EXCLUSION.ERA_ALIASES[normalizedName] || null;
+}
+
+/**
+ * Gets the economic era key for a given date.
+ * @param date - Date string in YYYY-MM-DD format
+ * @returns Era key or null if no era matches
+ */
+function getEraKeyForDate(date: string): string | null {
+  const year = new Date(date).getFullYear();
+  
+  for (const [eraKey, era] of Object.entries(ECONOMIC_ERAS)) {
+    if (year >= era.start && year <= era.end) {
+      return eraKey;
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Checks if a date falls within any of the specified date ranges.
+ * @param date - Date string in YYYY-MM-DD format
+ * @param dateRanges - Array of date ranges to check against
+ * @returns True if date falls within any range
+ */
+function isDateInRanges(date: string, dateRanges: DateRange[]): boolean {
+  const checkDate = new Date(date);
+  
+  return dateRanges.some(range => {
+    const startDate = new Date(range.start);
+    const endDate = new Date(range.end);
+    return checkDate >= startDate && checkDate <= endDate;
+  });
+}
+
+/**
+ * Applies period exclusion filters to historical data based on scenario parameters.
+ * @param data - Array of economic data points
+ * @param params - Scenario parameters containing exclusion criteria
+ * @returns Filtered data array with excluded periods removed
+ */
+export function applyPeriodExclusions(
+  data: EconomicDataPoint[],
+  params: ScenarioParams
+): EconomicDataPoint[] {
+  let filteredData = [...data];
+
+  // 1. Exclude recent years if specified
+  if (params.excludeRecentYears && params.excludeRecentYears > 0) {
+    const cutoffDate = new Date();
+    cutoffDate.setFullYear(cutoffDate.getFullYear() - params.excludeRecentYears);
+    const cutoffString = cutoffDate.toISOString().split('T')[0];
+    
+    filteredData = filteredData.filter(point => point.date < cutoffString);
+  }
+
+  // 2. Apply era-based filtering
+  if (params.focusEras && params.focusEras.length > 0) {
+    // Focus mode: only include specified eras
+    const resolvedFocusEras = params.focusEras
+      .map(resolveEraAlias)
+      .filter(era => era !== null) as string[];
+    
+    filteredData = filteredData.filter(point => {
+      const eraKey = getEraKeyForDate(point.date);
+      return eraKey && resolvedFocusEras.includes(eraKey);
+    });
+  } else if (params.excludeEras && params.excludeEras.length > 0) {
+    // Exclude mode: remove specified eras
+    const resolvedExcludeEras = params.excludeEras
+      .map(resolveEraAlias)
+      .filter(era => era !== null) as string[];
+    
+    filteredData = filteredData.filter(point => {
+      const eraKey = getEraKeyForDate(point.date);
+      return !eraKey || !resolvedExcludeEras.includes(eraKey);
+    });
+  }
+
+  // 3. Apply custom date range exclusions
+  if (params.excludeDateRanges && params.excludeDateRanges.length > 0) {
+    filteredData = filteredData.filter(point => 
+      !isDateInRanges(point.date, params.excludeDateRanges!)
+    );
+  }
+
+  return filteredData;
+}
+
+/**
  * Applies temporal diversity filtering to prevent overlapping periods in results.
  * Ensures minimum time gap between returned analogues for meaningful historical diversity.
  * @param sortedAnalogues - Analogues sorted by similarity score (best first)
@@ -301,7 +399,10 @@ export function findAnalogues(
   }
 
   // Apply data quality filtering to historical data
-  const filteredData = filterDataQuality(allData, excludeUnreliableData);
+  let filteredData = filterDataQuality(allData, excludeUnreliableData);
+  
+  // Apply period exclusion filtering
+  filteredData = applyPeriodExclusions(filteredData, params);
 
   // 1. Pre-extract the series for the target window for each indicator
   const targetSeriesByIndicator: { [id: string]: number[] } = {};

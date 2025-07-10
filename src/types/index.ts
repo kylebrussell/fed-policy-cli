@@ -17,6 +17,16 @@ export interface ScenarioParams {
   windowMonths: number;
   minTimeGapMonths?: number; // Optional minimum gap between analogues (default: 6 months)
   excludeUnreliableData?: boolean; // Optional flag to exclude pre-1960 data (default: true)
+  excludeRecentYears?: number; // Optional number of recent years to exclude from analysis
+  focusEras?: string[]; // Optional list of economic eras to focus on (exclude all others)
+  excludeEras?: string[]; // Optional list of economic eras to exclude from analysis
+  excludeDateRanges?: DateRange[]; // Optional custom date ranges to exclude
+}
+
+export interface DateRange {
+  start: string; // YYYY-MM-DD format
+  end: string; // YYYY-MM-DD format
+  description?: string; // Optional description of what this range represents
 }
 
 export interface HistoricalAnalogue {

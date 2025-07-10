@@ -63,6 +63,9 @@ const App = ({ command, params, indicators }: AppProps) => {
             indicators,
             windowMonths: params.months as number,
             excludeUnreliableData: !(params['include-unreliable'] as boolean),
+            excludeRecentYears: params['exclude-recent-years'] as number | undefined,
+            focusEras: params['focus-era'] ? (Array.isArray(params['focus-era']) ? params['focus-era'] : [params['focus-era']]) as string[] : undefined,
+            excludeEras: params['exclude-era'] ? (Array.isArray(params['exclude-era']) ? params['exclude-era'] : [params['exclude-era']]) as string[] : undefined,
           };
 
           const results = findAnalogues(allData, targetScenario, scenarioParams, params.top as number);
@@ -131,6 +134,21 @@ yargs(hideBin(process.argv))
         type: 'boolean',
         default: false,
         alias: 'u',
+      })
+      .option('exclude-recent-years', {
+        describe: 'Exclude the last N years from analysis (e.g., --exclude-recent-years 5)',
+        type: 'number',
+        alias: 'x',
+      })
+      .option('focus-era', {
+        describe: 'Focus analysis on specific economic eras only (e.g., --focus-era stagflation --focus-era volcker)',
+        type: 'string',
+        alias: 'f',
+      })
+      .option('exclude-era', {
+        describe: 'Exclude specific economic eras from analysis (e.g., --exclude-era modern)',
+        type: 'string',
+        alias: 'e',
       });
   }, (argv) => {
     const indicators: WeightedIndicator[] = (Array.isArray(argv.indicator) ? argv.indicator : [argv.indicator]).map(ind => {

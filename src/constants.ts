@@ -48,3 +48,39 @@ export const DATA_QUALITY = {
     UNRELIABLE: { start: '1948-01-01', end: '1959-12-31', reliability: 'low' }
   }
 };
+
+// Period exclusion constants and mappings
+export const PERIOD_EXCLUSION = {
+  // Economic era identifiers for CLI usage (user-friendly names)
+  ERA_ALIASES: {
+    'modern': 'MODERN_ERA',
+    'post-covid': 'MODERN_ERA',
+    'recovery': 'GREAT_RECESSION_RECOVERY',
+    'great-recession-recovery': 'GREAT_RECESSION_RECOVERY',
+    'financial-crisis': 'FINANCIAL_CRISIS',
+    'crisis': 'FINANCIAL_CRISIS',
+    'dot-com': 'DOT_COM_ERA',
+    'dotcom': 'DOT_COM_ERA',
+    'greenspan': 'GREENSPAN_ERA',
+    'volcker': 'VOLCKER_INFLATION',
+    'stagflation': 'STAGFLATION',
+    'golden-age': 'GOLDEN_AGE',
+    'post-war': 'GOLDEN_AGE',
+    'historical': 'HISTORICAL',
+    'early': 'HISTORICAL'
+  },
+  
+  // Common period exclusion presets
+  COMMON_EXCLUSIONS: {
+    'recent-5-years': { excludeRecentYears: 5, description: 'Exclude last 5 years' },
+    'recent-10-years': { excludeRecentYears: 10, description: 'Exclude last 10 years' },
+    'post-2000': { 
+      excludeDateRanges: [{ start: '2000-01-01', end: '2030-12-31', description: 'Post-2000 period' }],
+      description: 'Focus on pre-2000 historical periods'
+    },
+    'pre-1980': {
+      excludeDateRanges: [{ start: '1980-01-01', end: '2030-12-31', description: 'Modern era' }],
+      description: 'Focus on pre-1980 historical periods'
+    }
+  }
+};
