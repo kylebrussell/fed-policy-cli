@@ -10,7 +10,9 @@
       "Bash(npm run build:*)",
       "Bash(sqlite3:*)",
       "Bash(npm test:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(npm run start:*)",
+      "Bash(npx tsx:*)"
     ],
     "deny": []
   }

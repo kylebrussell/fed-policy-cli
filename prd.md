@@ -2,7 +2,7 @@
 
 **Author:** Gemini
 **Date:** July 10, 2025
-**Version:** 3.0
+**Version:** 4.0
 
 ## 1. Introduction & Problem Statement
 
@@ -139,8 +139,62 @@ Based on comprehensive user evaluation, query testing, and analysis of real-worl
 * **Export Functionality**: Add CSV/JSON export with analysis metadata
 * **API Rate Limiting**: Implement graceful FRED API handling with retry logic
 
-### 7.6. **PRODUCT INTELLIGENCE** *(Future Vision - Research Platform)*
+### 7.6. **FED POLICY ANALYSIS ENHANCEMENTS** *(Critical Priority - Core Value Proposition)*
+
+These enhancements directly address the primary goal of understanding and simulating Federal Reserve monetary policy decisions:
+
+#### 7.6.1. **Fed Policy Response Analyzer**
+* **Policy Pattern Recognition**: Automatically categorize Fed response patterns (e.g., "Aggressive easing", "Gradual tightening", "Data-dependent pause")
+* **Response Timing Analysis**: Calculate and display lag between economic triggers and Fed actions
+* **Policy Effectiveness Tracking**: Show how indicators responded to Fed interventions
+* **Historical Success Metrics**: Rate the effectiveness of past Fed responses in similar conditions
+
+#### 7.6.2. **Interactive Policy Simulator**
+* **What-If Scenarios**: Allow users to simulate different Fed actions and see projected outcomes
+* **Policy Comparison Mode**: Compare effectiveness of different policy approaches side-by-side
+* **Confidence Intervals**: Show statistical bounds on policy outcome predictions
+* **Real-time Adjustment**: Update projections as users modify Fed action assumptions
+
+#### 7.6.3. **Fed Reaction Function Dashboard**
+* **Policy Trigger Indicators**: Visual display of current values vs historical Fed action thresholds
+* **Rate Change Probability**: Calculate likelihood of Fed moves based on historical patterns
+* **Policy Pressure Gauge**: Composite indicator showing overall pressure for tightening/easing
+* **Decision Timeline**: Projected FOMC meeting outcomes based on current trajectory
+
+#### 7.6.4. **Policy Playbook Generator**
+* **Historical Playbooks**: Extract step-by-step Fed response patterns from analogues
+* **Market Expectations Analysis**: Compare Fed actions to contemporary market predictions
+* **Policy Rationale Extraction**: Identify key concerns driving Fed decisions
+* **Communication Pattern Analysis**: Track Fed rhetoric changes preceding policy shifts
+
+#### 7.6.5. **Enhanced Policy Timeline Visualization**
+* **Pre-Decision Context**: Show 3-6 months of data preceding each Fed action
+* **Cumulative Impact Tracking**: Running total of policy changes with economic context
+* **Policy Regime Identification**: Auto-label easing/tightening/neutral periods
+* **Meeting-by-Meeting Analysis**: Detailed view of each FOMC decision point
+
+#### 7.6.6. **Forward Guidance Analyzer**
+* **Policy Path Projection**: 6-12 month Fed action forecast based on historical precedent
+* **Scenario Probability Distribution**: Show likelihood of various policy paths
+* **Key Data Dependencies**: Highlight upcoming releases that could alter projections
+* **Historical Accuracy Scoring**: Track how well past analogues predicted Fed actions
+
+#### 7.6.7. **Policy Impact Scorecard**
+* **Indicator Response Profiles**: How each metric typically reacts to Fed moves
+* **Lag Analysis**: Time to policy effectiveness for different indicators
+* **Dual Mandate Scoring**: Success rate in achieving employment/inflation goals
+* **Unintended Consequences**: Historical side effects of similar policies
+
+#### 7.6.8. **Policy Prescription Summary**
+* **Most Likely Fed Response**: Primary policy recommendation with confidence level
+* **Alternative Scenarios**: Other plausible Fed reactions with probabilities
+* **Critical Thresholds**: Specific indicator levels that would trigger action
+* **Risk Assessment**: Factors that could make current situation unique
+
+### 7.7. **PRODUCT INTELLIGENCE** *(Future Vision - Advanced Research Platform)*
 * **Scenario Forecasting**: Extend historical analogues to project potential future economic paths
 * **Monte Carlo Policy Simulation**: Statistical modeling of Fed policy decision trees
 * **Real-time Alert System**: Notify when current conditions match historically significant periods
 * **Economic Research Integration**: Connect with academic datasets and policy research databases
+* **Machine Learning Integration**: Use ML to improve pattern recognition and policy predictions
+* **Natural Language Query Interface**: Allow researchers to ask questions in plain English

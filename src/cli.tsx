@@ -291,4 +291,4 @@ yargs(hideBin(process.argv))
   .example('$0 analyze -i UNRATE:0.5 -i CPIAUCSL:0.5 -m 12', 'Analyze with 50/50 weighting on unemployment and inflation.')
   .example('$0 correlate -i UNRATE CPIAUCSL GDPC1', 'Calculate the correlation between unemployment, inflation, and GDP growth.')
   .example('$0 list-templates', 'Show all available economic analysis templates.')
-  .argv;}
+  .argv;

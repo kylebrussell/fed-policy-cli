@@ -1,6 +1,8 @@
 # Fed Scenario Modeling Utility: Development Progress
 
 **Last Updated:** July 10, 2025
+**Current Version:** v3.2 (Algorithm Fixes Complete)
+**Next Priority:** v4.0 - Fed Policy Analysis Enhancements
 
 This document tracks the development progress against the implementation plan. Check off items as they are completed.
 
@@ -390,7 +392,23 @@ This document tracks the development progress against the implementation plan. C
 - ✅ **Economic Regime Templates COMPLETED**: 8 pre-built templates with economic rationale and CLI integration
 - 🎯 **Next Priority**: Phase 9.3 Interactive Target Period Selection for flexible historical comparisons
 
-### Target for v4.0 (User Experience Breakthrough) - **IN PROGRESS** 🚀
+### Target for v4.0 (Fed Policy Analysis Enhancements) - **NEW PRIORITY** 🎯
+
+**Core Mission**: Transform the tool from historical comparison utility into a true Fed policy simulation and prediction platform.
+
+#### Phase 8 (NEW): Fed Policy Analysis Components - **IMMEDIATE PRIORITY**
+- [ ] **Fed Policy Response Analyzer**: Pattern recognition, timing analysis, effectiveness tracking
+- [ ] **Enhanced Policy Timeline**: Pre-decision context, cumulative impact, regime identification
+- [ ] **Policy Playbook Generator**: Extract Fed response patterns and generate actionable playbooks
+- [ ] **Forward Guidance Analyzer**: 6-12 month Fed action projections with probabilities
+
+#### Phase 9 (NEW): Interactive Policy Features
+- [ ] **Interactive Policy Simulator**: What-if scenarios with real-time projections
+- [ ] **Fed Reaction Function Dashboard**: Trigger indicators, rate change probability, pressure gauge
+- [ ] **Policy Impact Scorecard**: Response profiles, lag analysis, dual mandate scoring
+- [ ] **Policy Prescription Summary**: Most likely Fed response with alternatives and thresholds
+
+#### Phase 10: Original User Experience Features
 - ✅ **Period Exclusion Controls**: User control over historical focus areas - **DONE**
 - ✅ **Economic Regime Templates**: Pre-built scenarios for common use cases - **DONE**
 - 🎯 **Interactive Target Selection**: Analyze any historical period as comparison base

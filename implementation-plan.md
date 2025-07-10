@@ -337,29 +337,77 @@ Following the successful implementation of flexible indicator analysis and compr
 ### **Phase 7** ✅ **COMPLETED** 
 ~~Fix critical bugs (Fed policy analysis, Node.js deprecations, test suite)~~
 
-### **Phase 8** 🔥 **IMMEDIATE PRIORITY** (Critical Algorithm Fixes)
-1. **Week 1-2**: Fix overlapping period problem and add minimum time gap enforcement
-2. **Week 3**: Resolve chart normalization issues causing flat displays  
-3. **Week 4**: Implement historical diversity scoring for temporal spread
-4. **Week 5**: Add data quality filtering for unreliable early periods
+### **Phase 8** 🎯 **IMMEDIATE PRIORITY** (Fed Policy Analysis Enhancements)
 
-### **Phase 9** 🎯 **HIGH PRIORITY** (Product Value Breakthroughs)
-1. **Month 2**: Period exclusion controls and historical era focusing
-2. **Month 3**: Economic regime templates for common use cases
-3. **Month 4**: Interactive target period selection capabilities
-4. **Month 5**: Historical context enrichment with economic events
+These enhancements directly address the core value proposition of understanding Fed policy responses:
 
-### **Phase 10** ⚡ **MEDIUM PRIORITY** (Advanced Features)
-1. **Month 6-7**: Regime detection engine and automatic period categorization
-2. **Month 8**: Multi-period regime comparison capabilities
-3. **Month 9**: Scenario persistence and sharing functionality
+1. **Week 1-2**: **Fed Policy Response Analyzer** (`src/components/PolicyResponseAnalyzer.tsx`)
+   - Implement policy pattern recognition (aggressive/gradual/data-dependent)
+   - Calculate response timing lags between triggers and actions
+   - Track policy effectiveness on indicators
+   - Files: New component `PolicyResponseAnalyzer.tsx`, update `AnalogueReportView.tsx`
 
-### **Phase 11** 🔧 **LOWER PRIORITY** (Technical Infrastructure)
-1. **Month 10+**: Performance optimizations and caching
-2. **Month 11+**: Export functionality and API development
-3. **Month 12+**: Extended data pipeline and real-time integration
+2. **Week 3-4**: **Enhanced Policy Timeline Visualization** (`src/components/PolicyTimeline.tsx`)
+   - Show 3-6 months pre-decision context
+   - Add cumulative impact tracking
+   - Auto-label policy regimes (easing/tightening/neutral)
+   - Implement FOMC meeting markers
+   - Files: New component `PolicyTimeline.tsx`, enhance existing timeline display
+
+3. **Week 5-6**: **Policy Playbook Generator** (`src/services/policyAnalysis.ts`)
+   - Extract Fed response patterns from analogues
+   - Generate step-by-step playbooks
+   - Identify policy rationale and key concerns
+   - Files: New service `policyAnalysis.ts`, update `AnalogueReportView.tsx`
+
+4. **Week 7-8**: **Forward Guidance Analyzer** (`src/components/ForwardGuidance.tsx`)
+   - Project 6-12 month Fed actions based on precedent
+   - Calculate probability distributions
+   - Highlight key data dependencies
+   - Files: New component `ForwardGuidance.tsx`, enhance `analysis.ts`
+
+### **Phase 9** 🔥 **HIGH PRIORITY** (Interactive Policy Features)
+
+1. **Month 3**: **Interactive Policy Simulator** (`src/components/PolicySimulator.tsx`)
+   - What-if scenario modeling
+   - Side-by-side policy comparison
+   - Real-time projection updates
+   - Files: New interactive component using Ink's `useInput` hook
+
+2. **Month 4**: **Fed Reaction Function Dashboard** (`src/components/FedDashboard.tsx`)
+   - Policy trigger indicators visualization
+   - Rate change probability calculator
+   - Policy pressure gauge
+   - Files: New dashboard component with real-time updates
+
+3. **Month 5**: **Policy Impact Scorecard** (`src/components/PolicyScorecard.tsx`)
+   - Indicator response profiles
+   - Lag analysis visualization
+   - Dual mandate scoring
+   - Files: New scorecard component
+
+### **Phase 10** 🔧 **CORE ALGORITHM FIXES** (Foundation Improvements)
+
+1. **Month 6**: Fix overlapping period problem and add minimum time gap enforcement
+2. **Month 7**: Resolve chart normalization issues causing flat displays  
+3. **Month 8**: Implement historical diversity scoring for temporal spread
+4. **Month 9**: Add data quality filtering for unreliable early periods
+
+### **Phase 11** ⚡ **USER EXPERIENCE ENHANCEMENTS** (Usability)
+
+1. **Month 10**: Period exclusion controls and historical era focusing
+2. **Month 11**: Economic regime templates for common use cases
+3. **Month 12**: Interactive target period selection capabilities
+
+### **Phase 12** 🚀 **ADVANCED FEATURES** (Future Vision)
+
+1. **Year 2+**: Machine learning integration for pattern recognition
+2. **Year 2+**: Natural language query interface
+3. **Year 2+**: Real-time alert system for policy-relevant conditions
 
 **Success Metrics by Phase:**
-- **Phase 8**: No overlapping results, meaningful chart variation, diverse historical coverage
-- **Phase 9**: 50% increase in query diversity, user-friendly templates, historical context integration
-- **Phase 10**: Automatic regime detection, multi-era comparisons, research collaboration features
+- **Phase 8**: Clear Fed policy insights, actionable playbooks, forward guidance projections
+- **Phase 9**: Interactive policy exploration, real-time simulations, comprehensive dashboards
+- **Phase 10**: No overlapping results, meaningful chart variation, diverse historical coverage
+- **Phase 11**: 50% increase in query diversity, user-friendly templates, historical context integration
+- **Phase 12**: AI-enhanced predictions, conversational interface, proactive alerts

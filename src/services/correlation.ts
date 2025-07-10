@@ -1,5 +1,5 @@
 
-import { getAllSeriesData } from './database';
+import { getAllData } from './database';
 import { lusolve, lup } from 'mathjs';
 
 export interface CorrelationMatrix {
@@ -14,7 +14,7 @@ export interface CorrelationMatrix {
  * @returns A matrix of correlation coefficients.
  */
 export async function calculateCorrelationMatrix(seriesIds: string[]): Promise<CorrelationMatrix> {
-  const seriesData = await getAllSeriesData();
+  const seriesData = await getAllData();
   const matrix: CorrelationMatrix = {};
 
   // Placeholder for correlation logic

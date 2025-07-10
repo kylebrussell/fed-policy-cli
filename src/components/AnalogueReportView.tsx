@@ -5,6 +5,7 @@ import { HistoricalAnalogue, WeightedIndicator } from '../types';
 import { FRED_SERIES } from '../constants';
 import { getEconomicEra } from '../services/analysis';
 import SimpleLineChart from './charts/SimpleLineChart';
+import PolicyResponseAnalyzer from './PolicyResponseAnalyzer';
 
 interface Props {
   analogues: HistoricalAnalogue[];
@@ -67,6 +68,9 @@ const AnalogueReportView: React.FC<Props> = ({ analogues, indicators }) => {
               ))}
             </Box>
           </Box>
+
+          {/* Add Policy Response Analysis - show projections for best match */}
+          <PolicyResponseAnalyzer analogue={analogue} showProjections={index === 0} />
         </Box>
       ))}
     </Box>
