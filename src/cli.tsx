@@ -7,11 +7,13 @@ import { hideBin } from 'yargs/helpers';
 import { fetchAllEconomicData } from './services/api';
 import { initDatabase, insertData, getAllData } from './services/database';
 import { findAnalogues, getLastNMonths, getTargetPeriod } from './services/analysis';
+import { calculateCorrelationMatrix, CorrelationMatrix } from './services/correlation';
 import { ScenarioParams, HistoricalAnalogue, WeightedIndicator, EconomicDataPoint } from './types';
 import { FRED_SERIES, ECONOMIC_TEMPLATES } from './constants';
 import LoadingSpinner from './components/Spinner';
 import StatusMessage from './components/StatusMessage';
 import AnalogueReportView from './components/AnalogueReportView';
+import CorrelationHeatmap from './components/charts/CorrelationHeatmap';
 
 interface AppProps {
   command: string;
@@ -24,6 +26,7 @@ const App = ({ command, params, indicators }: AppProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analogues, setAnalogues] = useState<HistoricalAnalogue[]>([]);
+  const [correlationMatrix, setCorrelationMatrix] = useState<CorrelationMatrix | null>(null);
 
   useEffect(() => {
     const run = async () => {
@@ -98,6 +101,21 @@ const App = ({ command, params, indicators }: AppProps) => {
         finally {
           setLoading(false);
         }
+      } else if (command === 'correlate') {
+        try {
+          setLoading(true);
+          setStatus('Initializing database...');
+          await initDatabase();
+          setStatus('Calculating correlation matrix...');
+          const seriesIds = (params.indicators as string[]).map(i => i.split(':')[0]);
+          const matrix = await calculateCorrelationMatrix(seriesIds);
+          setCorrelationMatrix(matrix);
+          setStatus('Correlation analysis complete.');
+        } catch (e) {
+          setError(e instanceof Error ? e.message : String(e));
+        } finally {
+          setLoading(false);
+        }
       }
     };
 
@@ -117,6 +135,15 @@ const App = ({ command, params, indicators }: AppProps) => {
       <Box flexDirection="column">
         <StatusMessage message={status} type="success" />
         <AnalogueReportView analogues={analogues} indicators={indicators} />
+      </Box>
+    );
+  }
+
+  if (command === 'correlate' && !loading && correlationMatrix) {
+    return (
+      <Box flexDirection="column">
+        <StatusMessage message={status} type="success" />
+        <CorrelationHeatmap matrix={correlationMatrix} />
       </Box>
     );
   }
@@ -246,9 +273,22 @@ yargs(hideBin(process.argv))
 
     render(<App command="analyze" params={argv} indicators={indicators} />);
   })
-  .demandCommand(1, 'You need to specify a command: \`update-data\`, \`analyze\`, or \`list-templates\`.')
+  .command('correlate', 'Calculate the correlation matrix for a set of indicators', (yargs) => {
+    return yargs
+      .option('indicators', {
+        describe: 'A list of indicator IDs to correlate (e.g., UNRATE CPIAUCSL)',
+        type: 'string',
+        array: true,
+        demandOption: true,
+        alias: 'i',
+      });
+  }, (argv) => {
+    render(<App command="correlate" params={argv} indicators={[]} />);
+  })
+  .demandCommand(1, 'You need to specify a command: `update-data`, `analyze`, `correlate`, or `list-templates`.')
   .help()
   .example('$0 analyze -T stagflation-hunt -m 12', 'Use the stagflation template for analysis.')
   .example('$0 analyze -i UNRATE:0.5 -i CPIAUCSL:0.5 -m 12', 'Analyze with 50/50 weighting on unemployment and inflation.')
+  .example('$0 correlate -i UNRATE CPIAUCSL GDPC1', 'Calculate the correlation between unemployment, inflation, and GDP growth.')
   .example('$0 list-templates', 'Show all available economic analysis templates.')
-  .argv;
+  .argv;}
