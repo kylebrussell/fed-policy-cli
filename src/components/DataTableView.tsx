@@ -54,10 +54,10 @@ const DataTableView: React.FC<DataTableViewProps> = ({ data, title = 'Historical
         <Box key={index}>
           <Text>{analogue.startDate.padEnd(12)}</Text>
           <Text>{analogue.endDate.padEnd(12)}</Text>
-          <Text>{`${analogue.avgUnemployment.toFixed(1)}%`.padEnd(12)}</Text>
-          <Text>{`${analogue.avgInflation.toFixed(1)}%`.padEnd(10)}</Text>
-          <Text>{`${analogue.startRate.toFixed(2)}%`.padEnd(11)}</Text>
-          <Text>{`${analogue.endRate.toFixed(2)}%`.padEnd(9)}</Text>
+          <Text>{`${(analogue.avgUnemployment || 0).toFixed(1)}%`.padEnd(12)}</Text>
+          <Text>{`${(analogue.avgInflation || 0).toFixed(1)}%`.padEnd(10)}</Text>
+          <Text>{`${(analogue.startRate || 0).toFixed(2)}%`.padEnd(11)}</Text>
+          <Text>{`${(analogue.endRate || 0).toFixed(2)}%`.padEnd(9)}</Text>
           <Text color={getOutcomeColor(analogue.outcome)}>
             {analogue.outcome.padEnd(8)}
           </Text>

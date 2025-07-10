@@ -47,6 +47,8 @@ const App = ({ command, params }: AppProps) => {
       } else if (command === 'analyze') {
         try {
           setLoading(true);
+          setStatus('Initializing database...');
+          await initDatabase();
           setStatus('Loading economic data...');
           const data = await getAllData();
           

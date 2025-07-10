@@ -72,11 +72,16 @@ export const queryByDateRange = (start: string, end: string): Promise<EconomicDa
 
 export const getAllData = (): Promise<EconomicDataPoint[]> => {
   return new Promise((resolve, reject) => {
+    if (!db) {
+      reject(new Error('Database not initialized. Please run update-data first.'));
+      return;
+    }
+    
     db.all('SELECT * FROM economic_data ORDER BY date ASC', (err, rows: EconomicDataPoint[]) => {
       if (err) {
         reject(err);
       } else {
-        resolve(rows);
+        resolve(rows || []);
       }
     });
   });
