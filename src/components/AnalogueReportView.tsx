@@ -4,6 +4,7 @@ import { Box, Text } from 'ink';
 import { HistoricalAnalogue, WeightedIndicator } from '../types';
 import { renderAsciiChart } from '../utils/chart';
 import { FRED_SERIES } from '../constants';
+import { getEconomicEra } from '../services/analysis';
 
 interface Props {
   analogues: HistoricalAnalogue[];
@@ -31,6 +32,9 @@ const AnalogueReportView: React.FC<Props> = ({ analogues, indicators }) => {
             Analogue #{index + 1}: {analogue.startDate} to {analogue.endDate}
           </Text>
           <Text color="gray">Similarity Score: {analogue.similarityScore.toFixed(4)} (lower is more similar)</Text>
+          <Text color="cyan" italic>
+            Economic Era: {getEconomicEra(analogue.startDate).name} ({getEconomicEra(analogue.startDate).timeframe})
+          </Text>
 
           {indicators.map(indicator => (
             <Box flexDirection="column" marginTop={1} key={indicator.id}>

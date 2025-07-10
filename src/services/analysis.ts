@@ -100,32 +100,75 @@ const normalizeSeries = (series: number[]): number[] => {
 };
 
 /**
- * Calculates a temporal diversity bonus to favor results from different economic eras.
- * Results from different decades get preferential scoring to encourage historical spread.
+ * Defines major economic eras for enhanced temporal diversity scoring.
+ * Each era has distinct economic characteristics that provide valuable analogues.
+ */
+const ECONOMIC_ERAS = {
+  MODERN_ERA: { start: 2020, end: 2030, name: 'Modern Era (Post-COVID)', bonus: 1.15 },
+  GREAT_RECESSION_RECOVERY: { start: 2010, end: 2019, name: 'Great Recession Recovery', bonus: 1.05 },
+  FINANCIAL_CRISIS: { start: 2007, end: 2009, name: 'Financial Crisis', bonus: 0.85 },
+  DOT_COM_ERA: { start: 1995, end: 2006, name: 'Dot-Com Era', bonus: 0.90 },
+  GREENSPAN_ERA: { start: 1987, end: 1994, name: 'Greenspan Era', bonus: 0.88 },
+  VOLCKER_INFLATION: { start: 1979, end: 1986, name: 'Volcker Anti-Inflation', bonus: 0.80 },
+  STAGFLATION: { start: 1970, end: 1978, name: 'Stagflation Era', bonus: 0.75 },
+  GOLDEN_AGE: { start: 1950, end: 1969, name: 'Post-War Golden Age', bonus: 0.85 },
+  HISTORICAL: { start: 1900, end: 1949, name: 'Early Historical', bonus: 0.95 }
+};
+
+/**
+ * Enhanced temporal diversity bonus that considers economic eras and promotes historical spread.
+ * Provides stronger bonuses for historical periods and penalizes recent clustering.
  * @param startDate - The start date of the historical period
  * @returns Diversity multiplier (lower values = better diversity bonus)
  */
 function calculateTemporalDiversityBonus(startDate: string): number {
   const date = new Date(startDate);
   const year = date.getFullYear();
-  const currentYear = new Date().getFullYear();
   
-  // Calculate years ago
+  // Find which economic era this period belongs to
+  const era = Object.values(ECONOMIC_ERAS).find(era => year >= era.start && year <= era.end);
+  const baseBonus = era ? era.bonus : 1.0;
+  
+  // Apply additional recency penalty for very recent periods to encourage historical diversity
+  const currentYear = new Date().getFullYear();
   const yearsAgo = currentYear - year;
   
-  // Apply diversity bonus based on historical distance
-  // More recent periods get slight penalty, older periods get bonus
-  if (yearsAgo < 5) {
-    return 1.2; // Slight penalty for very recent periods
+  let recencyPenalty = 1.0;
+  if (yearsAgo < 2) {
+    recencyPenalty = 1.3; // Strong penalty for very recent periods (last 2 years)
+  } else if (yearsAgo < 5) {
+    recencyPenalty = 1.2; // Moderate penalty for recent periods (last 5 years)
   } else if (yearsAgo < 10) {
-    return 1.1; // Minor penalty for recent periods
-  } else if (yearsAgo < 20) {
-    return 1.0; // Neutral scoring
-  } else if (yearsAgo < 40) {
-    return 0.95; // Small bonus for older periods
-  } else {
-    return 0.9; // Bonus for very historical periods
+    recencyPenalty = 1.1; // Light penalty for somewhat recent periods
   }
+  
+  // Calculate final temporal diversity score
+  const finalScore = baseBonus * recencyPenalty;
+  
+  return Math.max(0.5, Math.min(2.0, finalScore)); // Clamp between 0.5 and 2.0
+}
+
+/**
+ * Gets the economic era name for a given date.
+ * Useful for displaying historical context in results.
+ * @param startDate - The start date of the historical period
+ * @returns Era name and timeframe
+ */
+export function getEconomicEra(startDate: string): { name: string; timeframe: string } {
+  const year = new Date(startDate).getFullYear();
+  const era = Object.values(ECONOMIC_ERAS).find(era => year >= era.start && year <= era.end);
+  
+  if (era) {
+    return {
+      name: era.name,
+      timeframe: `${era.start}-${era.end}`
+    };
+  }
+  
+  return {
+    name: 'Unknown Era',
+    timeframe: `${year}`
+  };
 }
 
 /**
@@ -201,8 +244,9 @@ export function findAnalogues(
     targetSeriesByIndicator[indicator.id] = targetScenario.map(d => d[indicator.id] as number);
   }
 
-  // 2. Iterate through historical windows and calculate weighted DTW distance
+  // 2. Iterate through historical windows and calculate weighted DTW distance with enhanced diversity
   const analogues: Omit<HistoricalAnalogue, 'fedPolicyActions'>[] = [];
+  
   for (let i = 0; i <= allData.length - windowSize; i++) {
     const historicalWindow = allData.slice(i, i + windowSize);
 
@@ -224,7 +268,7 @@ export function findAnalogues(
       totalWeightedDistance += distance * indicator.weight;
     }
 
-    // Calculate temporal diversity bonus (favors results from different eras)
+    // Apply enhanced temporal diversity bonus (simplified approach)
     const temporalDiversityScore = calculateTemporalDiversityBonus(historicalWindow[0].date);
     const finalScore = totalWeightedDistance * temporalDiversityScore;
 
