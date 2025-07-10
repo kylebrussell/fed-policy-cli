@@ -38,7 +38,13 @@ const AnalogueReportView: React.FC<Props> = ({ analogues, indicators }) => {
               <Box paddingLeft={2}>
                 <Text>
                   {renderAsciiChart(
-                    analogue.data.map(d => ({ value: d[indicator.id] as number, label: d.date })),
+                    // Sample data monthly (1st of each month) to show meaningful variation
+                    analogue.data
+                      .filter((d, index) => index === 0 || new Date(d.date).getDate() === 1)
+                      .map(d => ({ 
+                        value: d[indicator.id] as number, 
+                        label: new Date(d.date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+                      })),
                     5
                   )}
                 </Text>

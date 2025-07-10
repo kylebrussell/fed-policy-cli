@@ -62,5 +62,26 @@ describe('Chart Utilities', () => {
           expect(lines[4].includes('█')).toBe(true);
           expect(lines[0].includes('█')).toBe(true);
       });
+
+    it('should enhance visualization for small relative variations', () => {
+        // Simulate economic data with small variations (like unemployment 4.0-4.2%)
+        const data = [
+            { value: 4.0, label: 'M1' },
+            { value: 4.1, label: 'M2' },
+            { value: 4.2, label: 'M3' },
+            { value: 4.0, label: 'M4' },
+          ];
+          const chart = renderAsciiChart(data, 5);
+          const lines = chart.split('\n');
+
+          expect(lines).toHaveLength(5);
+          // The enhanced scaling should show variation even for small ranges
+          // Check that not all bars are the same height by examining chart structure
+          const hasVariation = lines.some(line => {
+            const barPart = line.split('-')[1] || '';
+            return barPart.includes(' ') && barPart.includes('█');
+          });
+          expect(hasVariation).toBe(true); // Should show height variation
+    });
   });
 });
