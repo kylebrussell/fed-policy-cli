@@ -9,15 +9,19 @@ import {
 import { calculateDtwDistance } from '../utils/similarity';
 
 /**
- * Analyzes the fed_funds_rate within a given data period to extract policy actions.
+ * Analyzes the fed_funds_rate within a given data period to extract meaningful policy actions.
+ * Filters out daily noise and groups consecutive changes to show realistic Fed policy decisions.
  * @param periodData - A slice of economic data for a specific period.
- * @returns An array of FedPolicyAction objects.
+ * @returns An array of FedPolicyAction objects representing significant policy moves.
  */
 export function extractFedPolicyActions(periodData: EconomicDataPoint[]): FedPolicyAction[] {
-  const actions: FedPolicyAction[] = [];
   if (periodData.length < 2) {
     return [];
   }
+
+  // First, identify all rate changes above the minimum threshold
+  const MIN_SIGNIFICANT_CHANGE_BPS = 10; // Minimum 10 bps to be considered significant
+  const rawChanges: { date: string; changeBps: number; rate: number }[] = [];
 
   for (let i = 1; i < periodData.length; i++) {
     const prevRate = periodData[i - 1].DFF as number;
@@ -25,21 +29,61 @@ export function extractFedPolicyActions(periodData: EconomicDataPoint[]): FedPol
 
     if (typeof prevRate === 'number' && typeof currRate === 'number') {
       const changeBps = Math.round((currRate - prevRate) * 100);
-      if (changeBps !== 0) {
-        actions.push({
+      if (Math.abs(changeBps) >= MIN_SIGNIFICANT_CHANGE_BPS) {
+        rawChanges.push({
           date: periodData[i].date,
-          action: changeBps > 0 ? 'HIKE' : 'CUT',
           changeBps,
+          rate: currRate
         });
       }
     }
   }
-  // If there were no changes at all, report a single HOLD action for the period.
+
+  // Group consecutive changes in the same direction within a reasonable timeframe
+  const actions: FedPolicyAction[] = [];
+  const MAX_GROUPING_DAYS = 30; // Group changes within 30 days
+
+  for (let i = 0; i < rawChanges.length; i++) {
+    const currentChange = rawChanges[i];
+    let totalChange = currentChange.changeBps;
+    let endDate = currentChange.date;
+    
+    // Look ahead for consecutive changes in the same direction
+    let j = i + 1;
+    while (j < rawChanges.length) {
+      const nextChange = rawChanges[j];
+      const daysDiff = Math.abs(new Date(nextChange.date).getTime() - new Date(currentChange.date).getTime()) / (1000 * 60 * 60 * 24);
+      
+      // If next change is in same direction and within grouping window
+      if (daysDiff <= MAX_GROUPING_DAYS && 
+          Math.sign(nextChange.changeBps) === Math.sign(currentChange.changeBps)) {
+        totalChange += nextChange.changeBps;
+        endDate = nextChange.date;
+        j++;
+      } else {
+        break;
+      }
+    }
+
+    // Only add significant grouped changes
+    if (Math.abs(totalChange) >= MIN_SIGNIFICANT_CHANGE_BPS) {
+      actions.push({
+        date: endDate, // Use the final date of the grouped changes
+        action: totalChange > 0 ? 'HIKE' : 'CUT',
+        changeBps: totalChange,
+      });
+    }
+
+    // Skip the changes we've already grouped
+    i = j - 1;
+  }
+
+  // If no significant changes found, report a HOLD action
   if (actions.length === 0) {
     actions.push({
-        date: periodData[Math.floor(periodData.length / 2)].date, // Middle of the period
-        action: 'HOLD',
-        changeBps: 0,
+      date: periodData[Math.floor(periodData.length / 2)].date,
+      action: 'HOLD',
+      changeBps: 0,
     });
   }
 

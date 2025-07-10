@@ -226,3 +226,85 @@ const AnalogueReportView: React.FC<Props> = ({ analogues, indicators }) => {
 3.  **Step 3: Update CLI.** Change the `yargs` configuration in `cli.tsx` to use the new `--indicator` flag and add the necessary parsing and validation logic.
 4.  **Step 4: Update UI.** Make the `AnalogueReportView.tsx` component dynamic, so it can render charts for any combination of indicators.
 5.  **Step 5: Testing.** Update all relevant unit and integration tests to cover the new flexible indicator functionality.
+
+---
+
+## 5. Post-v3.0 Enhancement Plan
+
+Following the successful implementation of flexible indicator analysis, the following improvements have been identified through user evaluation:
+
+### Phase 7: Bug Fixes & Technical Debt (High Priority)
+
+**7.1: Fix Fed Policy Action Analysis** (`src/services/analysis.ts:16`)
+- Problem: Currently showing unrealistic daily Fed policy changes
+- Solution: Implement minimum threshold filtering (>10-25 bps) and consecutive change grouping
+- Files to modify: `src/services/analysis.ts`
+- Testing: Update `src/services/__tests__/analysis.test.ts`
+
+**7.2: Resolve Node.js Deprecations** (`package.json:12`)
+- Problem: Using deprecated `--experimental-loader` flag and `fs.Stats` constructor
+- Solution: Update to `--import` syntax and fix SQLite3 usage
+- Files to modify: `package.json`, potentially `tsconfig.json`
+
+**7.3: Fix Test Suite** (`src/services/__tests__/analysis.test.ts`)
+- Problem: 3 failing tests in analysis service
+- Solution: Update test expectations to match current analysis logic
+- Impact: Ensures code reliability and prevents regressions
+
+### Phase 8: Data Quality Improvements (Medium Priority)
+
+**8.1: Data Validation Framework**
+- Add validation for FRED API responses
+- Implement data quality checks (missing values, outliers)
+- Add error recovery for corrupted data
+
+**8.2: Enhanced API Handling**
+- Implement exponential backoff for rate limiting
+- Add caching layer for API responses
+- Better error messages for API failures
+
+**8.3: Incremental Data Updates**
+- Support partial data updates instead of full refresh
+- Track data update timestamps
+- Optimize database operations for large datasets
+
+### Phase 9: User Experience Enhancements (Medium Priority)
+
+**9.1: Export Functionality**
+- Add CSV export for analysis results
+- JSON export for programmatic usage
+- Include metadata (analysis parameters, timestamps)
+
+**9.2: Custom Date Range Analysis**
+- Support analysis of specific historical periods
+- Allow comparison between any two time periods
+- Add date range validation
+
+**9.3: Better Duplicate Handling**
+- Implement minimum time gap between similar periods
+- Improve similarity scoring to reduce near-duplicates
+- Add user option to control result filtering
+
+### Phase 10: Advanced Features (Low Priority)
+
+**10.1: Performance Optimizations**
+- Cache DTW calculations for repeated analysis
+- Optimize database schema and queries
+- Add progress bars for long-running operations
+
+**10.2: Additional Indicators**
+- Expand FRED series based on user feedback
+- Support user-defined indicator combinations
+- Add sector-specific economic indicators
+
+**10.3: Statistical Enhancements**
+- Add confidence intervals for similarity scores
+- Implement Monte Carlo simulation for policy outcomes
+- Add regime detection algorithms
+
+## 6. Priority Implementation Order
+
+1. **Immediate (Next Sprint)**: Fix Fed policy analysis and Node.js deprecations
+2. **Short-term (1-2 months)**: Fix test suite and improve data validation
+3. **Medium-term (3-6 months)**: Add export functionality and custom date ranges
+4. **Long-term (6+ months)**: Advanced analytics and performance optimizations

@@ -100,3 +100,36 @@ For each top-ranked analogue, the tool will generate a detailed report containin
 * The utility is for local, single-user operation. No server or cloud component is required.
 * The accuracy of the analysis is dependent on the availability and quality of public data from FRED.
 * The simulation is a simplified model based on historical correlation and does not constitute financial advice. It is a tool for exploration, not prediction.
+
+## 7. Future Enhancement Opportunities
+
+Based on user evaluation and testing, the following improvement areas have been identified:
+
+### 7.1. Data Quality & Processing
+* **Fed Policy Action Filtering**: Implement intelligent filtering to remove daily noise from Fed Funds Rate data and only show meaningful policy changes (>10-25 bps typically)
+* **Data Validation**: Add comprehensive validation for missing or corrupt FRED API data
+* **API Rate Limiting**: Implement graceful handling of FRED API rate limits with retry logic
+* **Data Freshness Indicators**: Show users when data was last updated and alert for stale data
+
+### 7.2. Technical Improvements
+* **Node.js Deprecation Fixes**: Update build system to resolve `--experimental-loader` and `fs.Stats` deprecation warnings
+* **Test Suite Enhancement**: Fix failing tests in analysis.test.ts and improve overall test coverage
+* **Performance Optimization**: Implement caching for DTW calculations and optimize database queries for large datasets
+* **Incremental Updates**: Support incremental data updates instead of full refresh cycles
+
+### 7.3. User Experience Enhancements
+* **Export Functionality**: Add ability to export analysis results to CSV/JSON formats
+* **Custom Date Ranges**: Support analysis of specific historical periods, not just recent months
+* **Confidence Intervals**: Provide statistical confidence measures for similarity scores
+* **Progress Indicators**: Enhanced progress feedback for long-running operations
+* **Duplicate Period Handling**: Better logic to avoid showing nearly identical recent time periods as separate results
+
+### 7.4. Additional Economic Indicators
+* **Expanded Indicator Set**: Support for additional FRED series based on user demand
+* **Custom Indicators**: Allow users to define custom weighted combinations of existing indicators
+* **Sector-Specific Analysis**: Industry-specific indicators for targeted analysis
+
+### 7.5. Advanced Analytics
+* **Scenario Forecasting**: Extend historical analogues to project potential future paths
+* **Monte Carlo Simulation**: Statistical modeling of potential Fed policy outcomes
+* **Regime Detection**: Automatic identification of distinct economic regimes in historical data

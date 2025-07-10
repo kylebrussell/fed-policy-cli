@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc",
     "start": "npm run build && node dist/cli.js",
-    "dev": "node --loader ts-node/esm src/cli.tsx",
+    "dev": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' src/cli.tsx",
     "test": "jest"
   },
   "keywords": [],
