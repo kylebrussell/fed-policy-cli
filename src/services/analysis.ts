@@ -100,6 +100,81 @@ const normalizeSeries = (series: number[]): number[] => {
 };
 
 /**
+ * Calculates a temporal diversity bonus to favor results from different economic eras.
+ * Results from different decades get preferential scoring to encourage historical spread.
+ * @param startDate - The start date of the historical period
+ * @returns Diversity multiplier (lower values = better diversity bonus)
+ */
+function calculateTemporalDiversityBonus(startDate: string): number {
+  const date = new Date(startDate);
+  const year = date.getFullYear();
+  const currentYear = new Date().getFullYear();
+  
+  // Calculate years ago
+  const yearsAgo = currentYear - year;
+  
+  // Apply diversity bonus based on historical distance
+  // More recent periods get slight penalty, older periods get bonus
+  if (yearsAgo < 5) {
+    return 1.2; // Slight penalty for very recent periods
+  } else if (yearsAgo < 10) {
+    return 1.1; // Minor penalty for recent periods
+  } else if (yearsAgo < 20) {
+    return 1.0; // Neutral scoring
+  } else if (yearsAgo < 40) {
+    return 0.95; // Small bonus for older periods
+  } else {
+    return 0.9; // Bonus for very historical periods
+  }
+}
+
+/**
+ * Applies temporal diversity filtering to prevent overlapping periods in results.
+ * Ensures minimum time gap between returned analogues for meaningful historical diversity.
+ * @param sortedAnalogues - Analogues sorted by similarity score (best first)
+ * @param maxResults - Maximum number of results to return
+ * @returns Filtered analogues with enforced temporal diversity
+ */
+function applyTemporalDiversityFilter(
+  sortedAnalogues: Omit<HistoricalAnalogue, 'fedPolicyActions'>[],
+  maxResults: number,
+  minTimeGapMonths: number = 6
+): Omit<HistoricalAnalogue, 'fedPolicyActions'>[] {
+  const selectedAnalogues: Omit<HistoricalAnalogue, 'fedPolicyActions'>[] = [];
+  
+  for (const analogue of sortedAnalogues) {
+    // Check if this analogue conflicts with any already selected
+    const hasOverlap = selectedAnalogues.some(selected => {
+      const analogueStart = new Date(analogue.startDate);
+      const analogueEnd = new Date(analogue.endDate);
+      const selectedStart = new Date(selected.startDate);
+      const selectedEnd = new Date(selected.endDate);
+      
+      // Calculate time gap between periods
+      const gapFromEnd = Math.abs(analogueStart.getTime() - selectedEnd.getTime());
+      const gapFromStart = Math.abs(selectedStart.getTime() - analogueEnd.getTime());
+      const minGap = Math.min(gapFromEnd, gapFromStart);
+      
+      // Convert milliseconds to months (approximate)
+      const gapMonths = minGap / (1000 * 60 * 60 * 24 * 30.44);
+      
+      return gapMonths < minTimeGapMonths;
+    });
+    
+    if (!hasOverlap) {
+      selectedAnalogues.push(analogue);
+      
+      // Stop when we have enough diverse results
+      if (selectedAnalogues.length >= maxResults) {
+        break;
+      }
+    }
+  }
+  
+  return selectedAnalogues;
+}
+
+/**
  * Finds the most similar historical periods to a target scenario using weighted DTW with windowed normalization.
  * @param allData - The entire historical dataset.
  * @param targetScenario - The recent data slice to compare against.
@@ -149,20 +224,26 @@ export function findAnalogues(
       totalWeightedDistance += distance * indicator.weight;
     }
 
+    // Calculate temporal diversity bonus (favors results from different eras)
+    const temporalDiversityScore = calculateTemporalDiversityBonus(historicalWindow[0].date);
+    const finalScore = totalWeightedDistance * temporalDiversityScore;
+
     analogues.push({
       startDate: historicalWindow[0].date,
       endDate: historicalWindow[historicalWindow.length - 1].date,
-      similarityScore: totalWeightedDistance,
+      similarityScore: finalScore,
       data: historicalWindow,
     });
   }
 
-  // 3. Sort by similarity and enrich with policy actions
-  const topAnalogues = analogues
-    .sort((a, b) => a.similarityScore - b.similarityScore)
-    .slice(0, topN);
+  // 3. Sort by similarity and apply temporal diversity filtering
+  const sortedAnalogues = analogues.sort((a, b) => a.similarityScore - b.similarityScore);
+  
+  // 4. Apply temporal diversity filter to prevent overlapping periods
+  const minGapMonths = params.minTimeGapMonths || 6; // Default to 6 months
+  const diverseAnalogues = applyTemporalDiversityFilter(sortedAnalogues, topN, minGapMonths);
 
-  const detailedAnalogues: HistoricalAnalogue[] = topAnalogues.map(analogue => {
+  const detailedAnalogues: HistoricalAnalogue[] = diverseAnalogues.map(analogue => {
     const fedPolicyActions = extractFedPolicyActions(analogue.data);
     return { ...analogue, fedPolicyActions };
   });

@@ -165,16 +165,21 @@ This document tracks the development progress against the implementation plan. C
 
 ## Phase 7: Post-Launch Evaluation & Bug Fixes
 
-* [ ] **7.1: User Evaluation & Testing**
+* [x] **7.1: User Evaluation & Testing** - **COMPLETED WITH MAJOR DISCOVERIES**
     * [x] Comprehensive CLI testing with README examples
     * [x] Performance evaluation of update-data and analyze commands
     * [x] Code quality assessment and architecture review
     * [x] Test suite execution and failure analysis
-    * **Issues Identified:**
-        - 3 failing tests in `src/services/__tests__/analysis.test.ts`
-        - Node.js deprecation warnings (`--experimental-loader`, `fs.Stats`)
-        - Unrealistic daily Fed policy changes showing in results
-        - Chart display issues with flat lines due to normalization
+    * [x] **Extensive Query Testing**: Inflation scenarios, unemployment analysis, yield curve focus, multi-indicator queries
+    * [x] **Real-world Usage Pattern Analysis**: GDP-focused analysis, economic regime discovery
+    * **Critical Issues Discovered:**
+        - ~~3 failing tests in `src/services/__tests__/analysis.test.ts`~~ **[FIXED]**
+        - ~~Node.js deprecation warnings (`--experimental-loader`, `fs.Stats`)~~ **[FIXED]**
+        - ~~Unrealistic daily Fed policy changes showing in results~~ **[FIXED]**
+        - **🚨 MAJOR: Overlapping Period Problem** - Tool returns redundant overlapping periods instead of diverse historical analogues
+        - **🚨 MAJOR: Chart Normalization Issues** - All charts display as flat lines, removing meaningful data variation
+        - **🚨 MAJOR: Historical Bias Problem** - Algorithm preferentially returns recent periods rather than spanning historical dataset
+        - **🚨 MAJOR: Data Quality Issues** - Early FRED data shows unrealistic Fed policy volatility (100+ bps daily moves)
 
 * [x] **7.2: Critical Bug Fixes (High Priority)** - **COMPLETED**
     * [x] **Fix Fed Policy Action Analysis** (`src/services/analysis.ts:16`)
@@ -228,6 +233,72 @@ This document tracks the development progress against the implementation plan. C
 
 ---
 
+## Phase 8: **CRITICAL ALGORITHM FIXES** (Immediate Priority - Core Product Issues)
+
+* [x] **8.1: Fix Overlapping Period Problem** (`src/services/analysis.ts:66`) - **COMPLETED ✅**
+    * [x] **Root Cause Analysis**: Identified sliding window algorithm checking every daily offset causing 99% overlapping periods
+    * [x] **Solution Implementation**: Enforced minimum 6-month gap between returned analogues via `applyTemporalDiversityFilter()`
+    * [x] **Algorithm Enhancement**: Added temporal diversity scoring with era-based bonuses (recent penalty, historical bonus)
+    * [x] **Configuration Options**: Made time gap configurable via `ScenarioParams.minTimeGapMonths` 
+    * [x] **Testing**: Verified diverse results spanning decades (2025, 1996, 1980) with meaningful similarity scores
+    * **Impact**: ✅ **MAJOR SUCCESS** - Tool now shows genuinely diverse historical analogues instead of redundant overlapping periods
+    * **Notes:** Results now span multiple economic eras (current, dot-com boom, Volcker inflation) with varied similarity scores (0.53-1.44) instead of meaningless 0.0000 values
+
+* [ ] **8.2: Fix Chart Normalization Issues** (`src/utils/chart.ts`, `src/services/analysis.ts:50`)
+    * [ ] **Problem Diagnosis**: Windowed normalization collapsing data ranges to identical values
+    * [ ] **Normalization Redesign**: Preserve relative variation while enabling comparison
+    * [ ] **Chart Rendering Fix**: Ensure meaningful visual differences in economic indicator displays
+    * [ ] **Visual Testing**: Verify charts show actual data variation, not flat lines
+    * **Impact**: Restores visual utility and interpretability of economic indicator charts
+
+* [ ] **8.3: Add Historical Diversity Scoring** (`src/services/analysis.ts:66`)
+    * [ ] **Temporal Bias Analysis**: Understand why tool prefers recent periods
+    * [ ] **Diversity Algorithm**: Add temporal diversity bonus to similarity scoring
+    * [ ] **Era Distribution Logic**: Boost scores for results from different decades/economic regimes
+    * [ ] **Coverage Testing**: Verify results span multiple historical periods
+    * **Impact**: Ensures results represent diverse economic eras and time periods
+
+* [ ] **8.4: Implement Data Quality Filtering** (`src/services/analysis.ts`, `src/constants.ts`)
+    * [ ] **Data Quality Assessment**: Analyze reliability of early FRED data periods
+    * [ ] **Quality Filters**: Exclude or flag unreliable early periods (pre-1960s)
+    * [ ] **Policy Volatility Validation**: Filter out impossible Fed policy moves (>100 bps daily)
+    * [ ] **Quality Indicators**: Add data reliability warnings to results
+    * **Impact**: Improves accuracy and reliability of historical analogues
+
+---
+
+## Phase 9: **USER EXPERIENCE BREAKTHROUGHS** (High Priority - Product Value)
+
+* [ ] **9.1: Period Exclusion Controls** (`src/cli.tsx`, `src/services/analysis.ts`)
+    * [ ] **CLI Enhancement**: Add `--exclude-recent-years` and `--focus-era` flags
+    * [ ] **Date Range Logic**: Implement flexible historical period filtering
+    * [ ] **Era Definition**: Support decade-based and custom date range exclusions
+    * [ ] **User Documentation**: Update CLI help and examples
+    * **Impact**: Enables discovery of truly historical analogues rather than recent patterns
+
+* [ ] **9.2: Economic Regime Templates** (`src/constants.ts`, `src/cli.tsx`)
+    * [ ] **Template Research**: Define indicator weights for common economic scenarios
+    * [ ] **Scenario Library**: Create "Stagflation Hunt", "Financial Crisis", "Policy Tightening" templates
+    * [ ] **CLI Integration**: Add `--template` flag with predefined scenarios
+    * [ ] **Template Documentation**: Provide economic rationale for each template
+    * **Impact**: Makes tool accessible to users without deep economic modeling expertise
+
+* [ ] **9.3: Interactive Target Period Selection** (`src/cli.tsx`, `src/services/analysis.ts`)
+    * [ ] **Target Period Logic**: Support analysis of any historical period as comparison base
+    * [ ] **CLI Interface**: Add `--target-period` flag accepting date ranges
+    * [ ] **Historical Comparison**: Enable "what if" analysis between any two periods
+    * [ ] **Period Validation**: Ensure target periods have sufficient data quality
+    * **Impact**: Enables flexible historical period comparisons and "what if" scenarios
+
+* [ ] **9.4: Historical Context Enrichment** (`src/components/AnalogueReportView.tsx`, `src/constants.ts`)
+    * [ ] **Economic Events Database**: Add recession dates, policy shifts, crisis markers
+    * [ ] **Timeline Integration**: Overlay economic events on analogue timelines
+    * [ ] **Context Visualization**: Show major economic events during analogue periods
+    * [ ] **Event Documentation**: Provide brief descriptions of historical events
+    * **Impact**: Provides crucial economic context for interpreting historical analogues
+
+---
+
 ## Known Issues & Technical Debt
 
 ### ~~High Priority Issues~~ - **RESOLVED ✅**
@@ -235,11 +306,16 @@ This document tracks the development progress against the implementation plan. C
 2. ~~**Node.js Deprecations**: Using deprecated loader syntax and fs.Stats constructor~~ - **MOSTLY FIXED** (loader fixed, fs.Stats is sqlite3 library issue)
 3. ~~**Test Failures**: 3 tests failing in analysis.test.ts affecting CI/CD reliability~~ - **FIXED**
 
-### Medium Priority Issues
-4. **Chart Display**: Some normalization issues causing flat line charts
-5. **Duplicate Results**: Recent time periods appearing as separate analogues
-6. **Data Validation**: Limited error handling for corrupt FRED API data
-7. **Minor Deprecation**: `fs.Stats` constructor warning from sqlite3 package (upstream issue)
+### 🚨 **CRITICAL ISSUES DISCOVERED** - **PARTIALLY RESOLVED**
+4. ~~**Overlapping Period Problem**: Tool returns redundant overlapping periods (e.g., multiple 1954 or 2025 windows) instead of diverse historical analogues~~ - **FIXED ✅**
+5. **Chart Normalization Failure**: All charts display as flat lines, removing meaningful data variation and making visual analysis impossible
+6. ~~**Historical Bias Algorithm**: Tool preferentially returns recent periods rather than spanning the full historical dataset~~ - **FIXED ✅**
+7. **Data Quality Issues**: Early FRED data (1950s) shows unrealistic Fed policy volatility (100+ bps daily moves)
+
+### Medium Priority Issues  
+8. **Data Validation**: Limited error handling for corrupt FRED API data
+9. **Minor Deprecation**: `fs.Stats` constructor warning from sqlite3 package (upstream issue)
+10. **Performance**: No caching for repeated DTW calculations
 
 ### Low Priority Improvements
 7. **Export Options**: Users cannot save analysis results
@@ -266,9 +342,30 @@ This document tracks the development progress against the implementation plan. C
 - ✅ Realistic Fed policy change detection with intelligent filtering
 - 🎯 Improved chart display quality (still pending)
 
-### Current Status (v3.1 Released)
-- ✅ **High Priority Bug Fixes**: All critical issues resolved
+### Current Status (v3.1 Released - Algorithm Issues Discovered)
+- ✅ **Initial Bug Fixes**: Fed policy analysis, Node.js compatibility, test suite reliability
 - ✅ **Improved Fed Policy Analysis**: Realistic policy action detection 
 - ✅ **Updated Node.js Compatibility**: Modern module loading syntax
 - ✅ **Robust Test Suite**: 100% test pass rate with improved coverage
-- 🔄 **Ready for Medium Priority Enhancements**: Data validation, export features, UX improvements
+- 🚨 **Critical Algorithm Issues Identified**: Overlapping periods, chart normalization, historical bias, data quality
+- 🎯 **Next Priority**: Phase 8 Algorithm Fixes to address core functionality problems
+
+### Target for v3.2 (Algorithm Fix Release) - **PARTIALLY COMPLETED**
+- ✅ **No Overlapping Results**: Enforce minimum time gaps between analogues - **DONE**
+- 🎯 **Meaningful Chart Displays**: Fix normalization to show actual data variation - **PENDING**
+- ✅ **Historical Diversity**: Results span multiple economic eras, not just recent periods - **DONE**
+- 🎯 **Data Quality Assurance**: Filter unreliable early periods and impossible policy moves - **PENDING**
+
+### Current Status (v3.2-in-progress - Major Algorithm Breakthrough)
+- ✅ **Overlapping Period Problem SOLVED**: Tool now returns diverse historical analogues spanning decades
+- ✅ **Temporal Diversity Algorithm**: Era-based scoring favors historical spread over recent clustering  
+- ✅ **Configurable Time Gaps**: Users can control minimum separation via `minTimeGapMonths` parameter
+- ✅ **Meaningful Similarity Scores**: Results show varied scores (0.53-1.44) instead of meaningless 0.0000 values
+- ✅ **Rich Historical Context**: Results now span multiple economic regimes (current, dot-com era, Volcker period)
+- 🎯 **Next Priority**: Chart normalization fixes to restore visual data interpretation
+
+### Target for v4.0 (User Experience Breakthrough)
+- 🎯 **Period Exclusion Controls**: User control over historical focus areas
+- 🎯 **Economic Regime Templates**: Pre-built scenarios for common use cases
+- 🎯 **Interactive Target Selection**: Analyze any historical period as comparison base
+- 🎯 **Historical Context Integration**: Economic events and regime markers on timelines

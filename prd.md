@@ -103,33 +103,44 @@ For each top-ranked analogue, the tool will generate a detailed report containin
 
 ## 7. Future Enhancement Opportunities
 
-Based on user evaluation and testing, the following improvement areas have been identified:
+Based on comprehensive user evaluation, query testing, and analysis of real-world usage patterns, the following improvement areas have been identified:
 
-### 7.1. Data Quality & Processing
-* **Fed Policy Action Filtering**: Implement intelligent filtering to remove daily noise from Fed Funds Rate data and only show meaningful policy changes (>10-25 bps typically)
-* **Data Validation**: Add comprehensive validation for missing or corrupt FRED API data
-* **API Rate Limiting**: Implement graceful handling of FRED API rate limits with retry logic
-* **Data Freshness Indicators**: Show users when data was last updated and alert for stale data
+### 7.1. **CRITICAL ALGORITHM FIXES** *(High Priority - Core Functionality)*
+* ~~**Fed Policy Action Filtering**: Implement intelligent filtering to remove daily noise from Fed Funds Rate data~~ **[COMPLETED]**
+* **Overlapping Period Prevention**: Enforce minimum time gap (6+ months) between returned analogues to eliminate redundant results
+* **Historical Diversity Scoring**: Add algorithmic bias toward temporally diverse results spanning different economic eras
+* **Improved Normalization**: Fix windowed normalization that currently removes meaningful data variation, causing flat chart displays
+* **Data Quality Filtering**: Exclude unreliable early FRED data (pre-1960s) showing impossible Fed policy volatility
 
-### 7.2. Technical Improvements
-* **Node.js Deprecation Fixes**: Update build system to resolve `--experimental-loader` and `fs.Stats` deprecation warnings
-* **Test Suite Enhancement**: Fix failing tests in analysis.test.ts and improve overall test coverage
-* **Performance Optimization**: Implement caching for DTW calculations and optimize database queries for large datasets
-* **Incremental Updates**: Support incremental data updates instead of full refresh cycles
+### 7.2. **USER EXPERIENCE BREAKTHROUGHS** *(High Priority - Product Value)*
+* **Period Exclusion Controls**: Allow users to exclude recent periods ("last 5 years") or specify historical focus eras
+* **Economic Regime Templates**: Pre-built scenarios like "Stagflation Hunt", "Financial Crisis Patterns", "Policy Tightening Cycles"
+* **Interactive Target Period Selection**: Let users analyze any historical period, not just recent months
+* **Multi-Period Regime Comparison**: Compare current conditions against multiple distinct historical eras simultaneously
+* **Historical Context Enrichment**: Overlay recession dates, major policy shifts, and crisis markers on timelines
 
-### 7.3. User Experience Enhancements
-* **Export Functionality**: Add ability to export analysis results to CSV/JSON formats
-* **Custom Date Ranges**: Support analysis of specific historical periods, not just recent months
-* **Confidence Intervals**: Provide statistical confidence measures for similarity scores
-* **Progress Indicators**: Enhanced progress feedback for long-running operations
-* **Duplicate Period Handling**: Better logic to avoid showing nearly identical recent time periods as separate results
+### 7.3. **ADVANCED ANALYTICAL CAPABILITIES** *(Medium Priority - Power User Features)*
+* **Regime Detection Engine**: Automatically identify distinct economic periods ("High Inflation Era", "ZIRP Period", etc.)
+* **Confidence & Quality Indicators**: Statistical bounds around similarity scores with data reliability warnings
+* **Trend Direction Analysis**: Show directional changes (rising/falling patterns) rather than just absolute levels
+* **Scenario Persistence & Sharing**: Save/load/export scenario definitions for research collaboration
+* **Batch Analysis Workflows**: Run multiple scenarios automatically and generate comparative reports
 
-### 7.4. Additional Economic Indicators
-* **Expanded Indicator Set**: Support for additional FRED series based on user demand
-* **Custom Indicators**: Allow users to define custom weighted combinations of existing indicators
-* **Sector-Specific Analysis**: Industry-specific indicators for targeted analysis
+### 7.4. **DATA & VISUALIZATION ENHANCEMENTS** *(Medium Priority - Analytical Depth)*
+* **Extended Historical Coverage**: Integrate additional pre-1950s data sources for longer-term perspective
+* **Dynamic Chart Scaling**: Resolve normalization issues to display meaningful variation instead of flat lines
+* **Economic Context Annotations**: Automatically label major economic events and policy regime changes
+* **Multi-Scale Time Analysis**: Support analysis across different time horizons (quarterly, annual, multi-year cycles)
 
-### 7.5. Advanced Analytics
-* **Scenario Forecasting**: Extend historical analogues to project potential future paths
-* **Monte Carlo Simulation**: Statistical modeling of potential Fed policy outcomes
-* **Regime Detection**: Automatic identification of distinct economic regimes in historical data
+### 7.5. **TECHNICAL INFRASTRUCTURE** *(Lower Priority - Platform Improvements)*
+* ~~**Node.js Deprecation Fixes**: Update build system warnings~~ **[COMPLETED]**
+* ~~**Test Suite Enhancement**: Fix failing tests~~ **[COMPLETED]**
+* **Performance Optimization**: Implement caching for DTW calculations and optimize database queries
+* **Export Functionality**: Add CSV/JSON export with analysis metadata
+* **API Rate Limiting**: Implement graceful FRED API handling with retry logic
+
+### 7.6. **PRODUCT INTELLIGENCE** *(Future Vision - Research Platform)*
+* **Scenario Forecasting**: Extend historical analogues to project potential future economic paths
+* **Monte Carlo Policy Simulation**: Statistical modeling of Fed policy decision trees
+* **Real-time Alert System**: Notify when current conditions match historically significant periods
+* **Economic Research Integration**: Connect with academic datasets and policy research databases

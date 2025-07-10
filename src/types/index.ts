@@ -15,6 +15,7 @@ export interface WeightedIndicator {
 export interface ScenarioParams {
   indicators: WeightedIndicator[];
   windowMonths: number;
+  minTimeGapMonths?: number; // Optional minimum gap between analogues (default: 6 months)
 }
 
 export interface HistoricalAnalogue {

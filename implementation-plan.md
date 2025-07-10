@@ -231,80 +231,135 @@ const AnalogueReportView: React.FC<Props> = ({ analogues, indicators }) => {
 
 ## 5. Post-v3.0 Enhancement Plan
 
-Following the successful implementation of flexible indicator analysis, the following improvements have been identified through user evaluation:
+Following the successful implementation of flexible indicator analysis and comprehensive query testing, the following improvements have been identified:
 
-### Phase 7: Bug Fixes & Technical Debt (High Priority)
+### Phase 7: ~~Bug Fixes & Technical Debt~~ - **COMPLETED ✅**
 
-**7.1: Fix Fed Policy Action Analysis** (`src/services/analysis.ts:16`)
-- Problem: Currently showing unrealistic daily Fed policy changes
-- Solution: Implement minimum threshold filtering (>10-25 bps) and consecutive change grouping
-- Files to modify: `src/services/analysis.ts`
-- Testing: Update `src/services/__tests__/analysis.test.ts`
+~~**7.1: Fix Fed Policy Action Analysis** (`src/services/analysis.ts:16`)~~ **[COMPLETED]**
+~~**7.2: Resolve Node.js Deprecations** (`package.json:12`)~~ **[COMPLETED]**  
+~~**7.3: Fix Test Suite** (`src/services/__tests__/analysis.test.ts`)~~ **[COMPLETED]**
 
-**7.2: Resolve Node.js Deprecations** (`package.json:12`)
-- Problem: Using deprecated `--experimental-loader` flag and `fs.Stats` constructor
-- Solution: Update to `--import` syntax and fix SQLite3 usage
-- Files to modify: `package.json`, potentially `tsconfig.json`
+### Phase 8: **CRITICAL ALGORITHM FIXES** (High Priority - Core Product Issues)
 
-**7.3: Fix Test Suite** (`src/services/__tests__/analysis.test.ts`)
-- Problem: 3 failing tests in analysis service
-- Solution: Update test expectations to match current analysis logic
-- Impact: Ensures code reliability and prevents regressions
+**8.1: Fix Overlapping Period Problem** (`src/services/analysis.ts:66`)
+- **Issue Discovered**: Queries return overlapping periods (e.g., multiple 1954 or 2025 windows) instead of diverse historical analogues
+- **Root Cause**: Algorithm lacks minimum time separation enforcement between results
+- **Solution**: Implement minimum 6-month gap between returned analogues
+- **Files**: `src/services/analysis.ts`, `src/types/index.ts`
+- **Impact**: Transforms tool from showing redundant results to providing genuinely diverse historical perspectives
 
-### Phase 8: Data Quality Improvements (Medium Priority)
+**8.2: Fix Chart Normalization Issues** (`src/utils/chart.ts`, `src/services/analysis.ts:50`)
+- **Issue Discovered**: All charts display as flat lines, removing meaningful data variation
+- **Root Cause**: Windowed normalization is collapsing data ranges to identical values
+- **Solution**: Revise normalization to preserve relative variation while enabling comparison
+- **Files**: `src/services/analysis.ts`, `src/utils/chart.ts`
+- **Impact**: Restores visual utility of economic indicator charts
 
-**8.1: Data Validation Framework**
-- Add validation for FRED API responses
-- Implement data quality checks (missing values, outliers)
-- Add error recovery for corrupted data
+**8.3: Add Historical Diversity Scoring** (`src/services/analysis.ts:66`)
+- **Issue Discovered**: Tool preferentially returns recent periods rather than spanning historical dataset
+- **Solution**: Add temporal diversity bonus to similarity scoring algorithm
+- **Algorithm**: Boost scores for results from different decades/economic eras
+- **Files**: `src/services/analysis.ts`
+- **Impact**: Ensures results span multiple economic regimes and time periods
 
-**8.2: Enhanced API Handling**
-- Implement exponential backoff for rate limiting
-- Add caching layer for API responses
-- Better error messages for API failures
+**8.4: Implement Data Quality Filtering** (`src/services/analysis.ts`, `src/constants.ts`)
+- **Issue Discovered**: Early FRED data (1950s) shows unrealistic Fed policy volatility (100+ bps daily moves)
+- **Solution**: Add data quality filters and date range restrictions
+- **Implementation**: Exclude pre-1960 data or add quality warnings
+- **Files**: `src/services/analysis.ts`, `src/constants.ts`
+- **Impact**: Improves reliability of historical analogues
 
-**8.3: Incremental Data Updates**
-- Support partial data updates instead of full refresh
-- Track data update timestamps
-- Optimize database operations for large datasets
+### Phase 9: **USER EXPERIENCE BREAKTHROUGHS** (High Priority - Product Value)
 
-### Phase 9: User Experience Enhancements (Medium Priority)
+**9.1: Period Exclusion Controls** (`src/cli.tsx`, `src/services/analysis.ts`)
+- **Feature**: Allow users to exclude recent periods or focus on specific eras
+- **Implementation**: Add CLI flags like `--exclude-recent-years 5` or `--focus-era 1970s-1990s`
+- **Files**: `src/cli.tsx`, `src/services/analysis.ts`
+- **Impact**: Enables discovery of truly historical analogues rather than recent patterns
 
-**9.1: Export Functionality**
-- Add CSV export for analysis results
-- JSON export for programmatic usage
-- Include metadata (analysis parameters, timestamps)
+**9.2: Economic Regime Templates** (`src/constants.ts`, `src/cli.tsx`)
+- **Feature**: Pre-built scenarios like "Stagflation Hunt", "Financial Crisis Patterns", "Policy Tightening Cycles"
+- **Implementation**: Predefined indicator weights and parameters for common economic research queries
+- **Files**: `src/constants.ts`, `src/cli.tsx`, new `src/templates/` directory
+- **Impact**: Makes tool accessible to users without deep economic modeling knowledge
 
-**9.2: Custom Date Range Analysis**
-- Support analysis of specific historical periods
-- Allow comparison between any two time periods
-- Add date range validation
+**9.3: Interactive Target Period Selection** (`src/cli.tsx`, `src/services/analysis.ts`)
+- **Feature**: Analyze any historical period, not just recent months
+- **Implementation**: Add `--target-period` flag accepting date ranges
+- **Files**: `src/cli.tsx`, `src/services/analysis.ts`
+- **Impact**: Enables "what if" analysis and historical period comparisons
 
-**9.3: Better Duplicate Handling**
-- Implement minimum time gap between similar periods
-- Improve similarity scoring to reduce near-duplicates
-- Add user option to control result filtering
+**9.4: Historical Context Enrichment** (`src/components/AnalogueReportView.tsx`, `src/constants.ts`)
+- **Feature**: Overlay recession dates, major policy shifts, and crisis markers on timelines
+- **Implementation**: Add economic event database and visualization layers
+- **Files**: `src/constants.ts`, `src/components/AnalogueReportView.tsx`
+- **Impact**: Provides crucial context for interpreting historical analogues
 
-### Phase 10: Advanced Features (Low Priority)
+### Phase 10: **ADVANCED ANALYTICAL CAPABILITIES** (Medium Priority - Power Users)
 
-**10.1: Performance Optimizations**
+**10.1: Regime Detection Engine** (`src/services/regime-detection.ts`)
+- **Feature**: Automatically identify distinct economic periods
+- **Algorithm**: Clustering analysis to detect regime changes in economic indicators
+- **Files**: New `src/services/regime-detection.ts`, `src/services/analysis.ts`
+- **Impact**: Enables automatic categorization of economic eras
+
+**10.2: Multi-Period Regime Comparison** (`src/services/analysis.ts`, `src/components/`)
+- **Feature**: Compare current conditions against multiple distinct historical eras simultaneously
+- **Implementation**: Extend analysis to return regime-based categories of results
+- **Files**: `src/services/analysis.ts`, `src/components/AnalogueReportView.tsx`
+- **Impact**: Provides broader economic context and multiple historical perspectives
+
+**10.3: Scenario Persistence & Sharing** (`src/services/scenarios.ts`)
+- **Feature**: Save/load/export scenario definitions for research collaboration
+- **Implementation**: JSON-based scenario files with metadata
+- **Files**: New `src/services/scenarios.ts`, `src/cli.tsx`
+- **Impact**: Enables reproducible research and knowledge sharing
+
+### Phase 11: **TECHNICAL INFRASTRUCTURE** (Lower Priority)
+
+**11.1: Performance & Caching**
 - Cache DTW calculations for repeated analysis
-- Optimize database schema and queries
-- Add progress bars for long-running operations
+- Optimize database queries for large datasets
+- Add progress indicators for long operations
 
-**10.2: Additional Indicators**
-- Expand FRED series based on user feedback
-- Support user-defined indicator combinations
-- Add sector-specific economic indicators
+**11.2: Export & Integration**
+- CSV/JSON export with analysis metadata
+- API for programmatic access
+- Integration with research databases
 
-**10.3: Statistical Enhancements**
-- Add confidence intervals for similarity scores
-- Implement Monte Carlo simulation for policy outcomes
-- Add regime detection algorithms
+**11.3: Data Pipeline Enhancements**
+- Incremental data updates
+- Extended historical coverage (pre-1950s sources)
+- Real-time economic data integration
 
-## 6. Priority Implementation Order
+## 6. Updated Priority Implementation Order
 
-1. **Immediate (Next Sprint)**: Fix Fed policy analysis and Node.js deprecations
-2. **Short-term (1-2 months)**: Fix test suite and improve data validation
-3. **Medium-term (3-6 months)**: Add export functionality and custom date ranges
-4. **Long-term (6+ months)**: Advanced analytics and performance optimizations
+### **Phase 7** ✅ **COMPLETED** 
+~~Fix critical bugs (Fed policy analysis, Node.js deprecations, test suite)~~
+
+### **Phase 8** 🔥 **IMMEDIATE PRIORITY** (Critical Algorithm Fixes)
+1. **Week 1-2**: Fix overlapping period problem and add minimum time gap enforcement
+2. **Week 3**: Resolve chart normalization issues causing flat displays  
+3. **Week 4**: Implement historical diversity scoring for temporal spread
+4. **Week 5**: Add data quality filtering for unreliable early periods
+
+### **Phase 9** 🎯 **HIGH PRIORITY** (Product Value Breakthroughs)
+1. **Month 2**: Period exclusion controls and historical era focusing
+2. **Month 3**: Economic regime templates for common use cases
+3. **Month 4**: Interactive target period selection capabilities
+4. **Month 5**: Historical context enrichment with economic events
+
+### **Phase 10** ⚡ **MEDIUM PRIORITY** (Advanced Features)
+1. **Month 6-7**: Regime detection engine and automatic period categorization
+2. **Month 8**: Multi-period regime comparison capabilities
+3. **Month 9**: Scenario persistence and sharing functionality
+
+### **Phase 11** 🔧 **LOWER PRIORITY** (Technical Infrastructure)
+1. **Month 10+**: Performance optimizations and caching
+2. **Month 11+**: Export functionality and API development
+3. **Month 12+**: Extended data pipeline and real-time integration
+
+**Success Metrics by Phase:**
+- **Phase 8**: No overlapping results, meaningful chart variation, diverse historical coverage
+- **Phase 9**: 50% increase in query diversity, user-friendly templates, historical context integration
+- **Phase 10**: Automatic regime detection, multi-era comparisons, research collaboration features
