@@ -2,7 +2,7 @@
 
 **Author:** Gemini
 **Date:** July 10, 2025
-**Version:** 1.2
+**Version:** 3.0
 
 ## 1. Introduction & Problem Statement
 
@@ -14,11 +14,11 @@ This document outlines the requirements for a local, command-line utility for ma
 
 * **Primary Goal:** To provide a user with a data-driven framework for understanding and simulating Federal Reserve monetary policy decisions.
 * **Objectives:**
-  * To aggregate and store key historical economic data locally.
-  * To provide an interactive command-line interface (CLI) for defining economic scenarios.
-  * To programmatically identify and display historical periods that match a user-defined scenario.
+  * To aggregate and store a flexible, expandable set of key historical economic data locally.
+  * To provide an interactive command-line interface (CLI) for defining complex, weighted economic scenarios.
+  * To implement a powerful analysis engine that uses similarity algorithms to identify and rank historical periods analogous to a user-defined scenario.
+  * To generate detailed, visually-rich, and dynamic reports within the CLI that compare scenarios and outline Fed actions.
   * To clearly present the Federal Reserve's actions (changes in the Fed Funds Rate) during those historical analogues.
-  * To generate a simple, probabilistic summary of potential future Fed actions based on the historical findings.
 
 ## 3. Target Audience
 
@@ -29,71 +29,63 @@ The primary user is a sophisticated individual on a macOS system, such as a reta
 ### 4.1. Data Ingestion and Management
 The utility must be able to fetch and store historical economic data from reliable public sources.
 
-**4.1.1. Data Points**
-The initial version will focus on the following monthly data:
-* **Unemployment Rate:** (e.g., UNRATE from FRED)
-* **Consumer Price Index (CPI):** Year-over-year percentage change (e.g., CPIAUCSL from FRED)
-* **Effective Federal Funds Rate:** (e.g., DFF from FRED)
+**4.1.1. Expanded Data Points**
+The utility will support a larger set of core economic indicators from FRED, including:
+*   **Unemployment Rate:** `UNRATE`
+*   **Consumer Price Index (CPI):** `CPIAUCSL` (YoY % change calculated)
+*   **Effective Federal Funds Rate:** `DFF`
+*   **Core PCE Inflation:** `PCEPI` (YoY % change calculated)
+*   **Real GDP Growth:** `GDPC1` (YoY % change calculated)
+*   **Yield Curve Spread:** `T10Y2Y` (10-Year minus 2-Year Treasury)
+*   **Initial Jobless Claims:** `ICSA`
 
 **4.1.2. Data Sources**
-Data will be fetched via APIs from sources like the Federal Reserve Economic Data (FRED) database provided by the St. Louis Fed and the Bureau of Labor Statistics (BLS).
+Data will be fetched via APIs from sources like the Federal Reserve Economic Data (FRED) database provided by the St. Louis Fed.
 
-**4.1.3. Local Storage**
-Data will be stored in a local SQLite database to ensure fast, offline access after the initial fetch.
+**4.1.3. Flexible Local Storage**
+Data will be stored in a local SQLite database. The schema will be designed to accommodate adding new indicators in the future without requiring a full database migration.
 
 **4.1.4. Data Update Command**
-A specific command (`fed-analyzer update-data`) will trigger a fetch for the latest available data and append it to the local database.
+A specific command (`fed-analyzer update-data`) will trigger a fetch for the latest available data for all supported indicators and append it to the local database.
 
 ### 4.2. Interactive CLI (Built with Ink)
 The user interface will be a rich, interactive application that runs within the terminal.
 
-**4.2.1. Main Dashboard**
-Upon launch, the tool will display the most recent values for the core economic indicators stored in its database.
+**4.2.1. Flexible Scenario Definition**
+The user will define a scenario via command-line flags, specifying which indicators to use and their relative importance (weight). This allows for highly customized analysis.
 
-**4.2.2. Scenario Definition**
-The user will be presented with an interactive form to define the parameters of a scenario they wish to analyze. For example:
-* Unemployment Rate Range (e.g., 4.0% to 4.5%)
-* Inflation (CPI) Range (e.g., 2.5% to 3.5%)
-* Time Window for Averaging (e.g., analyze 6-month historical windows)
-* Qualitative Factors (e.g., a checkbox for "Period of new/rising tariffs")
+**4.2.2. Command Structure Example**
+```bash
+fed-analyzer analyze \
+  --indicator UNRATE:0.4 \
+  --indicator CPIAUCSL:0.4 \
+  --indicator T10Y2Y:0.2 \
+  --months 12
+```
 
-### 4.3. Historical Analogue Finder
-This is the core analysis engine of the utility.
+### 4.3. Historical Analogue Engine
+This is the core analysis engine of the utility. It moves beyond simple range-matching to find the most statistically relevant historical comparisons.
 
-**4.3.1. Querying**
-Based on the user's scenario input, the tool will query the local SQLite database.
+**4.3.1. Weighted Multi-Variable Analysis**
+The engine will take the user-defined basket of indicators and their weights to create a composite vector for comparison. This ensures the similarity score reflects the user's analytical priorities.
 
-**4.3.2. Matching Logic**
-It will identify all historical time windows (e.g., consecutive 6-month periods) where the average values for unemployment and inflation fell within the user-specified ranges.
+**4.3.2. Similarity Algorithms**
+Implements sophisticated comparison methods to measure the similarity between the target scenario and past periods across the selected basket of indicators.
+*   **Dynamic Time Warping (DTW):** For comparing the trajectory of time-series data, even if they are out of phase.
 
-**4.3.3. Tariff Context**
-If the "tariffs" flag is checked, the tool will attempt to cross-reference matched periods with a hardcoded list of significant historical tariff acts (e.g., Smoot-Hawley, 2018-2019 tariffs).
+**4.3.3. Automated Ranking**
+The tool will process historical data to find the top 5-10 most analogous periods, presenting them in a ranked list with a "similarity score" derived from the chosen algorithm and weighting.
 
-### 4.4. Analogue Analysis View
-Once matching historical analogues are found, they will be displayed in a clear, readable format.
+### 4.4. Automated Analogue Reports & Visualization
+Once matching historical analogues are found, they will be displayed in a clear, rich, terminal-based report.
 
-**4.4.1. List of Analogues**
-The view will list the date ranges of all matching periods (e.g., "March 1995 - September 1995").
+**4.4.1. Ranked List of Analogues**
+The view will list the date ranges of all matching periods (e.g., "March 1995 - September 1995") ranked by their similarity score.
 
-**4.4.2. Detailed Breakdown**
-For each analogue period, the tool will display:
-* The average unemployment and inflation during that window.
-* The Fed Funds Rate at the *start* of the window.
-* The Fed Funds Rate at the *end* of the window.
-* A clear, color-coded indicator of the net action: **HIKE** (red), **CUT** (green), or **HOLD** (yellow).
-
-### 4.5. Simulation Summary
-After displaying the analogues, the tool will provide a simple probabilistic summary.
-
-**4.5.1. Aggregated Results**
-It will count the outcomes from the analogue analysis.
-
-**4.5.2. Output**
-The summary will be presented to the user, for example:
-> Based on 5 historical analogues found:
-> * The Fed executed a rate **HIKE** in 3 instances (60%).
-> * The Fed chose to **HOLD** rates in 2 instances (40%).
-> * The Fed executed a rate **CUT** in 0 instances (0%).
+**4.4.2. Dynamic Automated Reports**
+For each top-ranked analogue, the tool will generate a detailed report containing:
+*   **Dynamic Data Charts:** A compact, terminal-rendered chart will be displayed for *each indicator* included in the analysis.
+*   **Fed Policy Action Timeline:** A clear timeline illustrating the sequence and magnitude of Federal Funds Rate changes (e.g., `▲ +25bps`, `▼ -50bps`, `— HOLD`) that occurred during and immediately after the analogue period.
 
 ## 5. Technical Requirements
 
@@ -106,6 +98,5 @@ The summary will be presented to the user, for example:
 ## 6. Assumptions & Constraints
 
 * The utility is for local, single-user operation. No server or cloud component is required.
-* The accuracy of the analysis is dependent on the availability and quality of public data from FRED/BLS.
+* The accuracy of the analysis is dependent on the availability and quality of public data from FRED.
 * The simulation is a simplified model based on historical correlation and does not constitute financial advice. It is a tool for exploration, not prediction.
-* The initial version will focus on a limited set of economic indicators. More can be added later.

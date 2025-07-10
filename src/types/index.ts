@@ -17,9 +17,13 @@ export interface ScenarioParams {
 export interface HistoricalAnalogue {
   startDate: string;
   endDate: string;
-  avgUnemployment: number;
-  avgInflation: number;
-  startRate: number;
-  endRate: number;
-  outcome: 'HIKE' | 'CUT' | 'HOLD';
+  similarityScore: number; // New field for ranking
+  data: EconomicDataPoint[]; // The actual data for the period
+  fedPolicyActions: FedPolicyAction[]; // Timeline of Fed actions
+}
+
+export interface FedPolicyAction {
+  date: string;
+  action: 'HIKE' | 'CUT' | 'HOLD';
+  changeBps?: number; // Basis points change
 }

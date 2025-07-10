@@ -31,6 +31,7 @@ A well-organized directory structure is key.
 |   |   |-- DataTableView.tsx
 |   |   |-- Spinner.tsx
 |   |   |-- StatusMessage.tsx
+|   |   |-- AnalogueReportView.tsx # New component for rich reports
 |   |
 |   |-- /services         # Logic for data fetching and database interaction
 |   |   |-- api.ts
@@ -39,6 +40,10 @@ A well-organized directory structure is key.
 |   |
 |   |-- /types            # TypeScript type definitions
 |   |   |-- index.ts
+|   |
+|   |-- /utils            # New folder for utility/helper functions
+|   |   |-- similarity.ts   # Similarity algorithm implementations
+|   |   |-- chart.ts        # Terminal chart rendering logic
 |   |
 |   |-- cli.tsx           # Main application entry point and Ink UI logic
 |   |-- constants.ts      # Hardcoded values like API keys, URLs, tariff dates
@@ -52,53 +57,21 @@ A well-organized directory structure is key.
 
 ## 3. File-by-File Implementation Details
 
-### package.json
-Ensure this file includes a `bin` entry to make the CLI command available, and scripts for building and running.
-
-```json
-{
-  // ... other properties
-  "bin": {
-    "fed-analyzer": "./dist/cli.js"
-  },
-  "scripts": {
-    "build": "tsc",
-    "start": "npm run build && node dist/cli.js",
-    "dev": "ts-node src/cli.tsx"
-  }
-}
-```
-
-### tsconfig.json
-A standard configuration for a Node.js + React (Ink) project.
-
-```json
-{
-  "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "jsx": "react-jsx",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist"
-  },
-  "include": ["src/**/*"]
-}
-```
-
 ### /src/constants.ts
-Centralize constants for easy management.
+Centralize constants for easy management. The `FRED_SERIES` object will be expanded.
 
 ```typescript
 // /src/constants.ts
 
 // FRED API Series IDs
 export const FRED_SERIES = {
-  UNEMPLOYMENT: 'UNRATE',
-  CPI: 'CPIAUCSL', // Note: Will need to calculate YoY % change
-  FED_FUNDS: 'DFF',
+  UNRATE: { name: 'Unemployment Rate', type: 'level' },
+  CPIAUCSL: { name: 'CPI (Inflation)', type: 'yoy' },
+  DFF: { name: 'Federal Funds Rate', type: 'level' },
+  PCEPI: { name: 'PCE (Core Inflation)', type: 'yoy' },
+  GDPC1: { name: 'Real GDP', type: 'yoy_quarterly' },
+  T10Y2Y: { name: '10-2 Year Treasury Spread', type: 'level' },
+  ICSA: { name: 'Initial Claims', type: 'level' },
 };
 
 // FRED API base URL
@@ -109,159 +82,147 @@ export const FRED_API_KEY = 'YOUR_FRED_API_KEY_HERE';
 
 // Path for the local database
 export const DB_PATH = './data/economic_data.sqlite';
-
-// Hardcoded list of significant tariff periods for context
-export const TARIFF_PERIODS = [
-  { name: 'Smoot-Hawley Act', start: '1930-06-17', end: '1934-06-12' },
-  { name: '2018-2019 China Tariffs', start: '2018-03-01', end: '2020-01-15' },
-  { name: '2025 Liberation Day Tariffs', start: '2025-01-20', end: null },
-];
 ```
 
 ### /src/types/index.ts
-Define the data structures for type safety.
+Update types to support flexible indicators.
 
 ```typescript
 // /src/types/index.ts
 
+// A flexible data point that can hold any indicator
 export interface EconomicDataPoint {
   date: string; // YYYY-MM-DD
-  unemployment_rate?: number;
-  cpi_yoy?: number;
-  fed_funds_rate?: number;
+  [indicator: string]: number | string; // e.g., UNRATE: 4.1, CPIAUCSL_yoy: 3.2
+}
+
+// Defines a user-selected indicator and its weight
+export interface WeightedIndicator {
+  id: string; // e.g., 'UNRATE'
+  weight: number; // e.g., 0.5
 }
 
 export interface ScenarioParams {
-  unemployment: { min: number; max: number };
-  inflation: { min: number; max: number };
+  indicators: WeightedIndicator[];
   windowMonths: number;
-  useTariffContext: boolean;
 }
 
 export interface HistoricalAnalogue {
   startDate: string;
   endDate: string;
-  avgUnemployment: number;
-  avgInflation: number;
-  startRate: number;
-  endRate: number;
-  outcome: 'HIKE' | 'CUT' | 'HOLD';
+  similarityScore: number;
+  data: EconomicDataPoint[];
+  fedPolicyActions: FedPolicyAction[];
+}
+
+export interface FedPolicyAction {
+  date: string;
+  action: 'HIKE' | 'CUT' | 'HOLD';
+  changeBps?: number;
 }
 ```
 
 ### /src/services/database.ts
-Manages all interactions with the SQLite database.
+The database schema needs to be more flexible.
 
 ```typescript
 // /src/services/database.ts
-import sqlite3 from 'sqlite3';
-import { DB_PATH } from '../constants';
-import { EconomicDataPoint } from '../types';
+
+// Key change: The table will now have a column for each indicator ID from constants.ts.
+// The initDatabase function will dynamically build the CREATE TABLE statement.
+// The insertData function will dynamically build the INSERT statement.
 
 // Functions to implement:
-// 1. initDatabase(): Connects to the DB and runs CREATE TABLE IF NOT EXISTS.
-//    - Table schema: date (PRIMARY KEY), unemployment_rate, cpi_yoy, fed_funds_rate
-// 2. insertData(data: EconomicDataPoint[]): Inserts an array of data points, ignoring duplicates.
-// 3. queryByDateRange(start: string, end: string): Fetches all data within a date range.
-// 4. getAllData(): Fetches all data, ordered by date.
+// 1. initDatabase(): Dynamically creates a table with a column for 'date' and each FRED series ID.
+// 2. insertData(data: EconomicDataPoint[]): Inserts data, mapping object keys to table columns.
+// 3. getAllData(): Fetches all data, ordered by date.
 ```
 
 ### /src/services/api.ts
-Handles fetching data from the FRED API.
+Update the API service to handle different calculation types (YoY, etc.).
 
 ```typescript
 // /src/services/api.ts
-import fetch from 'node-fetch';
-import { FRED_API_URL, FRED_API_KEY, FRED_SERIES } from '../constants';
+
+// Key change: The fetchAllEconomicData function will iterate over the FRED_SERIES constant.
+// It will check the 'type' of each series and apply the correct transformation (e.g., year-over-year calculation for CPI, PCE, GDP).
+// It will need to handle quarterly data (GDP) by forward-filling the value for the months in that quarter.
 
 // Functions to implement:
-// 1. fetchSeriesData(seriesId: string): Fetches all data for a given FRED series ID.
-//    - Will need to handle pagination if the dataset is large.
-//    - Returns a clean array of { date, value } objects.
-// 2. fetchAllEconomicData(): Orchestrates calls to fetch all required series (unemployment, CPI, fed funds).
-//    - Processes the raw data (e.g., calculates YoY CPI change from the index).
-//    - Merges the data into a single array of EconomicDataPoint objects.
+// 1. fetchSeriesData(seriesId: string): Fetches data for a FRED series.
+// 2. fetchAllEconomicData(): Orchestrates fetching all series defined in constants.ts, performs necessary calculations (YoY, quarterly fill), and merges them into an array of EconomicDataPoint objects.
 ```
 
 ### /src/services/analysis.ts
-Contains the core logic for finding and analyzing historical analogues.
+The core analysis logic must be updated for weighted, multi-indicator scenarios.
 
 ```typescript
 // /src/services/analysis.ts
-import { EconomicDataPoint, ScenarioParams, HistoricalAnalogue } from '../types';
+
+// Key change: The findAnalogues function will be the main focus.
 
 // Functions to implement:
-// 1. findAnalogues(allData: EconomicDataPoint[], params: ScenarioParams): HistoricalAnalogue[]
-//    - This is the main engine.
-//    - It will iterate through `allData` in chunks of `params.windowMonths`.
-//    - For each chunk, it calculates the average unemployment and inflation.
-//    - If the averages match the scenario parameters, it creates a HistoricalAnalogue object.
-//    - It determines the 'outcome' (HIKE, CUT, HOLD) by comparing the start and end Fed Funds Rate.
-//    - If `params.useTariffContext` is true, it checks if the window overlaps with TARIFF_PERIODS.
+// 1. findAnalogues(allData: EconomicDataPoint[], targetScenario: EconomicDataPoint[], params: ScenarioParams, topN: number): HistoricalAnalogue[]
+//    - For each historical window, it will construct a vector of values based on the indicators specified in `params.indicators`.
+//    - It will apply the weights from `params.indicators` to these vectors.
+//    - It will normalize the data for each indicator across the entire dataset to ensure fair comparison (e.g., a 1% change in unemployment isn't treated the same as a 1% change in the Fed Funds Rate).
+//    - It will use `calculateDtwDistance` on the final weighted, normalized vectors.
+//    - It will rank by similarity and return the top N results, enriched with policy actions.
+// 2. extractFedPolicyActions(periodData: EconomicDataPoint[]): FedPolicyAction[]
+//    - No changes needed here.
 ```
 
 ### /src/cli.tsx
-The main application file. It handles command-line arguments and renders the Ink UI.
+The main CLI entry point needs to parse the new `--indicator` flag.
 
 ```typescript
 // /src/cli.tsx
-import React, { useState, useEffect } from 'react';
-import { render, Text, Box } from 'ink';
-import yargs from 'yargs/yargs';
-// Import your components and service functions
 
-const App = ({ command, params }) => {
-  // State for loading, data, results, etc.
-  const [status, setStatus] = useState('Initializing...');
-  const [results, setResults] = useState(null);
+// Key change: Update yargs configuration for the 'analyze' command.
+// It will now use a repeatable 'indicator' option.
 
-  useEffect(() => {
-    // Main logic based on the command from yargs
-    if (command === 'update-data') {
-      // Call data update service
-    } else if (command === 'analyze') {
-      // Call analysis service with params
-    }
-  }, [command, params]);
-
-  // Render different views based on state
-  // e.g., show a spinner while loading, then show results
-  return (
-    <Box>
-      {/* Your UI components go here */}
-      <Text>{status}</Text>
-    </Box>
-  );
-};
-
-// Use yargs to parse command line arguments
-yargs(process.argv.slice(2))
-  .command('update-data', 'Fetch latest economic data', () => {}, (argv) => {
-    render(<App command="update-data" params={argv} />);
-  })
-  .command('analyze', 'Analyze a scenario', (yargs) => {
-    // Define options for unemployment, inflation, etc.
+yargs(hideBin(process.argv))
+  .command('analyze', 'Find historical analogues', (yargs) => {
+    return yargs
+      .option('indicator', {
+        describe: 'Indicator to include in analysis, with weight (e.g., UNRATE:0.5)',
+        type: 'string',
+        demandOption: true,
+        alias: 'i',
+      })
+      // ... other options like 'months' and 'top'
   }, (argv) => {
+    // The code will need to parse the 'indicator' strings into WeightedIndicator objects.
+    // It will also need to validate that the sum of weights equals 1.0.
     render(<App command="analyze" params={argv} />);
   })
-  .demandCommand(1)
-  .help()
-  .argv;
 ```
 
-### /src/components/*.tsx
-These are the presentational components for the UI.
+### /src/components/AnalogueReportView.tsx
+The report view must dynamically render charts for all selected indicators.
 
-* **Spinner.tsx:** A simple loading spinner component from `ink-spinner`.
-* **StatusMessage.tsx:** A component to display status or error messages with colors.
-* **DataTableView.tsx:** A key component that takes an array of objects (like `HistoricalAnalogue[]`) and renders it as a formatted table using `<Box>` and `<Text>` components, similar to `console.table`.
+```typescript
+// /src/components/AnalogueReportView.tsx
+
+// Key change: The component will receive the list of indicators used in the analysis as a prop.
+// It will iterate over this list to render a chart for each one, pulling the correct data from the `analogue.data` array.
+
+const AnalogueReportView: React.FC<Props> = ({ analogues, indicators }) => {
+  // ...
+  {indicators.map(indicator => (
+    <Box key={indicator.id}>
+      <Text>{FRED_SERIES[indicator.id].name}:</Text>
+      <Text>{renderAsciiChart(/* ... */)}</Text>
+    </Box>
+  ))}
+  // ...
+}
+```
 
 ## 4. Development Workflow
 
-1.  **Step 1: Data Backend.** Implement `constants.ts`, `types/index.ts`, `services/database.ts`, and `services/api.ts`. Get your FRED API key. Build and test the `update-data` command first. You need data before you can do anything else.
-2.  **Step 2: Analysis Engine.** Implement `services/analysis.ts`. Write the core logic to find matching historical periods. You can test this with a simple script before integrating it with the UI.
-3.  **Step 3: Build the UI.** Start with `cli.tsx`. Wire up the `yargs` commands. Create the individual UI components in `/components`.
-4.  **Step 4: Integration.** In `cli.tsx`, call the analysis service when the `analyze` command is run. Use `useState` to manage the flow: `idle` -> `loading` -> `results`. Pass the results to your `DataTableView` component for display.
-5.  **Step 5: Refinement.** Add color, improve layout, and handle edge cases (e.g., no analogues found, API errors).
-
-
+1.  **Step 1: Refactor Data Layer.** Update `constants.ts`, `types/index.ts`, `services/database.ts`, and `services/api.ts` to support the new, flexible set of indicators. This is the most critical step.
+2.  **Step 2: Update Analysis Engine.** Modify `services/analysis.ts` to perform weighted, multi-indicator analysis, including data normalization.
+3.  **Step 3: Update CLI.** Change the `yargs` configuration in `cli.tsx` to use the new `--indicator` flag and add the necessary parsing and validation logic.
+4.  **Step 4: Update UI.** Make the `AnalogueReportView.tsx` component dynamic, so it can render charts for any combination of indicators.
+5.  **Step 5: Testing.** Update all relevant unit and integration tests to cover the new flexible indicator functionality.

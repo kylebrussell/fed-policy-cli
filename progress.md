@@ -100,3 +100,63 @@ This document tracks the development progress against the implementation plan. C
     * **Notes:** Completed. Comprehensive README with installation, usage, and security best practices.
 
 ---
+
+## Phase 5: Advanced Analytical Engine (v2.0)
+
+* [x] **5.1: Implement Core Algorithms**
+    * [x] Create `src/utils/similarity.ts`.
+    * [x] Implement `calculateEuclideanDistance` and `calculateDtwDistance` functions.
+    * [x] Create `src/utils/chart.ts`.
+    * [x] Implement `renderAsciiChart` for terminal-based data visualization.
+    * **Notes:** Completed.
+
+* [x] **5.2: Update Analysis Service**
+    * [x] Modify `src/types/index.ts` with new interfaces (`HistoricalAnalogue`, `FedPolicyAction`).
+    * [x] Update `src/services/analysis.ts` to use similarity algorithms instead of simple range matching.
+    * [x] Implement `findAnalogues` to rank results by similarity score.
+    * [x] Implement `extractFedPolicyActions` to build a timeline of Fed rate changes.
+    * **Notes:** Completed.
+
+* [x] **5.3: Build Advanced Reporting UI**
+    * [x] Create the new `src/components/AnalogueReportView.tsx` component.
+    * [x] Design the component to display ranked analogues, ASCII charts, and the policy action timeline.
+    * **Notes:** Completed.
+
+* [x] **5.4: Integrate New Engine into CLI**
+    * [x] Update `src/cli.tsx` to call the new analysis service.
+    * [x] Modify the `analyze` command to accept parameters for the new engine (e.g., weighting, algorithm choice).
+    * [x] Render the output using the new `AnalogueReportView` component instead of the old table view.
+    * **Notes:** Completed.
+
+* [x] **5.5: Testing & Refinement**
+    * [x] Add unit tests for the new similarity and charting utilities.
+    * [x] Perform end-to-end testing of the new analysis and reporting workflow.
+    * [x] Refine the visual presentation of charts and timelines for clarity.
+    * **Notes:** Completed. Overcame significant Jest/ESM configuration challenges and corrected flawed test logic to ensure all new functionality is verified.
+
+---
+
+## Phase 6: Flexible Indicator Analysis (v3.0)
+
+* [ ] **6.1: Refactor Data Layer**
+    * [ ] Update `src/constants.ts` to include new FRED series IDs and metadata.
+    * [ ] Update `src/types/index.ts` to support flexible, weighted indicators.
+    * [ ] Refactor `src/services/database.ts` to handle a dynamic table schema.
+    * [ ] Refactor `src/services/api.ts` to handle various data transformations (YoY, quarterly fill).
+    * [ ] **Notes:**
+
+* [ ] **6.2: Update Analysis Engine**
+    * [ ] Modify `src/services/analysis.ts` to accept weighted indicators.
+    * [ ] Implement data normalization to compare different types of series fairly.
+    * [ ] Update the similarity calculation to use the user-defined weights.
+    * [ ] **Notes:**
+
+* [ ] **6.3: Update CLI and UI**
+    * [ ] Update `src/cli.tsx` to use the new `--indicator` flag and validate weights.
+    * [ ] Modify `src/components/AnalogueReportView.tsx` to dynamically render charts for all selected indicators.
+    * [ ] **Notes:**
+
+* [ ] **6.4: Testing**
+    * [ ] Update all relevant unit and integration tests.
+    * [ ] Add new tests for the weighting and normalization logic.
+    * [ ] **Notes:**

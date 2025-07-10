@@ -10,7 +10,7 @@ import { findAnalogues } from './services/analysis';
 import { ScenarioParams, HistoricalAnalogue } from './types';
 import LoadingSpinner from './components/Spinner';
 import StatusMessage from './components/StatusMessage';
-import DataTableView from './components/DataTableView';
+import AnalogueReportView from './components/AnalogueReportView'; // New component
 
 interface AppProps {
   command: string;
@@ -49,29 +49,27 @@ const App = ({ command, params }: AppProps) => {
           setLoading(true);
           setStatus('Initializing database...');
           await initDatabase();
-          setStatus('Loading economic data...');
-          const data = await getAllData();
+          setStatus('Loading all historical economic data...');
+          const allData = await getAllData();
           
-          if (data.length === 0) {
-            setError('No economic data found. Please run "fed-analyzer update-data" first.');
+          if (allData.length < (params.months as number)) {
+            setError(`Not enough data to analyze. Need at least ${params.months} months of data. Run \`update-data\` first.`);
             return;
           }
 
-          setStatus('Analyzing historical analogues...');
+          // The "target scenario" is the most recent N months of data
+          const targetScenario = allData.slice(-(params.months as number));
+          setStatus(`Analyzing historical data against the last ${params.months} months...`);
+
+          // Note: ScenarioParams might be deprecated or repurposed for weighting in the future
           const scenarioParams: ScenarioParams = {
-            unemployment: { 
-              min: params.unemploymentMin as number, 
-              max: params.unemploymentMax as number 
-            },
-            inflation: { 
-              min: params.inflationMin as number, 
-              max: params.inflationMax as number 
-            },
-            windowMonths: params.windowMonths as number || 12,
-            useTariffContext: params.tariffContext as boolean || false,
+            unemployment: { min: 0, max: 100 }, // Not used in DTW analysis
+            inflation: { min: 0, max: 100 }, // Not used in DTW analysis
+            windowMonths: params.months as number,
+            useTariffContext: false, // Not used in DTW analysis
           };
 
-          const results = findAnalogues(data, scenarioParams);
+          const results = findAnalogues(allData, targetScenario, scenarioParams, params.top as number);
           setAnalogues(results);
           setStatus('Analysis complete.');
         } catch (error) {
@@ -97,12 +95,11 @@ const App = ({ command, params }: AppProps) => {
     return <StatusMessage message={error} type="error" />;
   }
 
-  if (command === 'analyze') {
+  if (command === 'analyze' && !loading) {
     return (
       <Box flexDirection="column">
         <StatusMessage message={status} type="success" />
-        <Text></Text>
-        <DataTableView data={analogues} />
+        <AnalogueReportView analogues={analogues} />
       </Box>
     );
   }
@@ -111,64 +108,34 @@ const App = ({ command, params }: AppProps) => {
 };
 
 yargs(hideBin(process.argv))
-  .command('update-data', 'Fetch latest economic data', (yargs) => {
+  .command('update-data', 'Fetch latest economic data from FRED', (yargs) => {
     return yargs
       .option('api-key', {
-        describe: 'FRED API key (alternatively set FRED_API_KEY environment variable)',
+        describe: 'FRED API key (or set FRED_API_KEY in .env)',
         type: 'string',
         alias: 'k'
       });
   }, (argv) => {
     render(<App command="update-data" params={argv} />);
   })
-  .command('analyze', 'Analyze historical analogues for a scenario', (yargs) => {
+  .command('analyze', 'Find historical analogues based on recent economic data', (yargs) => {
     return yargs
-      .option('unemployment-min', {
-        describe: 'Minimum unemployment rate (%)',
-        type: 'number',
-        demandOption: true,
-        alias: 'umin'
-      })
-      .option('unemployment-max', {
-        describe: 'Maximum unemployment rate (%)',
-        type: 'number',
-        demandOption: true,
-        alias: 'umax'
-      })
-      .option('inflation-min', {
-        describe: 'Minimum inflation rate (%)',
-        type: 'number',
-        demandOption: true,
-        alias: 'imin'
-      })
-      .option('inflation-max', {
-        describe: 'Maximum inflation rate (%)',
-        type: 'number',
-        demandOption: true,
-        alias: 'imax'
-      })
-      .option('window-months', {
-        describe: 'Analysis window in months',
+      .option('months', {
+        describe: 'Number of recent months to use as the target scenario',
         type: 'number',
         default: 12,
-        alias: 'w'
+        alias: 'm',
       })
-      .option('tariff-context', {
-        describe: 'Only include periods with tariff context',
-        type: 'boolean',
-        default: false,
-        alias: 't'
+      .option('top', {
+        describe: 'Number of top analogues to return',
+        type: 'number',
+        default: 5,
+        alias: 't',
       })
-      .option('api-key', {
-        describe: 'FRED API key (alternatively set FRED_API_KEY environment variable)',
-        type: 'string',
-        alias: 'k'
-      })
-      .example('$0 analyze --umin 3 --umax 5 --imin 2 --imax 4', 'Find analogues with 3-5% unemployment and 2-4% inflation')
-      .example('$0 analyze --umin 6 --umax 8 --imin 1 --imax 3 --window-months 6 --tariff-context', 'Find 6-month analogues with tariff context');
+      .example('$0 analyze -m 24 -t 10', 'Find the top 10 historical analogues to the last 24 months of data.');
   }, (argv) => {
     render(<App command="analyze" params={argv} />);
   })
-  .demandCommand(1)
+  .demandCommand(1, 'You need to specify a command: `update-data` or `analyze`.')
   .help()
   .argv;
