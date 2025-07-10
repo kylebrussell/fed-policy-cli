@@ -142,4 +142,4 @@ node --loader ts-node/esm src/testAnalysis.ts
 
 ## License
 
-ISC License - see package.json for details.
+MIT License - see package.json for details.
