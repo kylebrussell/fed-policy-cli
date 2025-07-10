@@ -20,28 +20,29 @@ export function extractFedPolicyActions(periodData: EconomicDataPoint[]): FedPol
   }
 
   for (let i = 1; i < periodData.length; i++) {
-    const prev = periodData[i - 1];
-    const curr = periodData[i];
-    const prevRate = prev.DFF as number;
-    const currRate = curr.DFF as number;
+    const prevRate = periodData[i - 1].DFF as number;
+    const currRate = periodData[i].DFF as number;
 
     if (typeof prevRate === 'number' && typeof currRate === 'number') {
       const changeBps = Math.round((currRate - prevRate) * 100);
-      let action: 'HIKE' | 'CUT' | 'HOLD' = 'HOLD';
-
-      if (changeBps > 0) {
-        action = 'HIKE';
-      } else if (changeBps < 0) {
-        action = 'CUT';
+      if (changeBps !== 0) {
+        actions.push({
+          date: periodData[i].date,
+          action: changeBps > 0 ? 'HIKE' : 'CUT',
+          changeBps,
+        });
       }
-
-      actions.push({
-        date: curr.date,
-        action,
-        changeBps,
-      });
     }
   }
+  // If there were no changes at all, report a single HOLD action for the period.
+  if (actions.length === 0) {
+    actions.push({
+        date: periodData[Math.floor(periodData.length / 2)].date, // Middle of the period
+        action: 'HOLD',
+        changeBps: 0,
+    });
+  }
+
   return actions;
 }
 
@@ -55,7 +56,7 @@ const normalizeSeries = (series: number[]): number[] => {
 };
 
 /**
- * Finds the most similar historical periods to a target scenario using weighted DTW.
+ * Finds the most similar historical periods to a target scenario using weighted DTW with windowed normalization.
  * @param allData - The entire historical dataset.
  * @param targetScenario - The recent data slice to compare against.
  * @param params - Parameters for the analysis, including weighted indicators.
@@ -75,37 +76,35 @@ export function findAnalogues(
     return [];
   }
 
-  // 1. Normalize all relevant series across the entire dataset
-  const normalizedData: { [indicatorId: string]: number[] } = {};
+  // 1. Pre-extract the series for the target window for each indicator
+  const targetSeriesByIndicator: { [id: string]: number[] } = {};
   for (const indicator of indicators) {
-    const fullSeries = allData.map(d => d[indicator.id] as number);
-    normalizedData[indicator.id] = normalizeSeries(fullSeries);
+    targetSeriesByIndicator[indicator.id] = targetScenario.map(d => d[indicator.id] as number);
   }
 
-  // 2. Create the normalized target vector
-  const targetStartIndex = allData.length - windowSize;
-  const getNormalizedWindow = (startIndex: number, indicatorId: string) => {
-    return normalizedData[indicatorId].slice(startIndex, startIndex + windowSize);
-  };
-
-  // 3. Iterate through historical windows and calculate weighted DTW distance
+  // 2. Iterate through historical windows and calculate weighted DTW distance
   const analogues: Omit<HistoricalAnalogue, 'fedPolicyActions'>[] = [];
   for (let i = 0; i <= allData.length - windowSize; i++) {
-    // Avoid comparing the scenario with itself
-    if (i === targetStartIndex) {
+    const historicalWindow = allData.slice(i, i + windowSize);
+
+    // Avoid comparing the scenario with itself by checking the start date
+    if (historicalWindow[0].date === targetScenario[0].date) {
       continue;
     }
 
     let totalWeightedDistance = 0;
     for (const indicator of indicators) {
-      const targetSeries = getNormalizedWindow(targetStartIndex, indicator.id);
-      const historicalSeries = getNormalizedWindow(i, indicator.id);
-      
-      const distance = calculateDtwDistance(targetSeries, historicalSeries);
+      const targetSeries = targetSeriesByIndicator[indicator.id];
+      const historicalSeries = historicalWindow.map(d => d[indicator.id] as number);
+
+      // ** CRITICAL CHANGE: Normalize each window independently **
+      const normalizedTarget = normalizeSeries(targetSeries);
+      const normalizedHistorical = normalizeSeries(historicalSeries);
+
+      const distance = calculateDtwDistance(normalizedTarget, normalizedHistorical);
       totalWeightedDistance += distance * indicator.weight;
     }
 
-    const historicalWindow = allData.slice(i, i + windowSize);
     analogues.push({
       startDate: historicalWindow[0].date,
       endDate: historicalWindow[historicalWindow.length - 1].date,
@@ -114,7 +113,7 @@ export function findAnalogues(
     });
   }
 
-  // 4. Sort by similarity and enrich with policy actions
+  // 3. Sort by similarity and enrich with policy actions
   const topAnalogues = analogues
     .sort((a, b) => a.similarityScore - b.similarityScore)
     .slice(0, topN);

@@ -21,12 +21,13 @@ const fetchSeriesData = async (seriesId: string, apiKey: string): Promise<FredOb
 const transformData = (
   seriesId: string,
   observations: FredObservation[],
-  allSeriesData: { [seriesId: string]: FredObservation[] }
 ): { [date: string]: number } => {
   const { type } = FRED_SERIES[seriesId];
   const transformed: { [date: string]: number } = {};
 
-  const numericObservations = observations.map(obs => ({ date: obs.date, value: parseFloat(obs.value) })).filter(obs => !isNaN(obs.value));
+  const numericObservations = observations
+    .map(obs => ({ date: obs.date, value: parseFloat(obs.value) }))
+    .filter(obs => !isNaN(obs.value));
 
   switch (type) {
     case 'yoy':
@@ -60,42 +61,40 @@ const transformData = (
 
 export const fetchAllEconomicData = async (apiKey?: string): Promise<EconomicDataPoint[]> => {
   const fredApiKey = getFredApiKey(apiKey);
-  const allData: { [date: string]: EconomicDataPoint } = {};
-  const allSeriesData: { [seriesId: string]: FredObservation[] } = {};
+  const allSeriesData: { [seriesId: string]: { [date: string]: number } } = {};
 
-  // 1. Fetch all series data in parallel
+  // 1. Fetch and transform all series data in parallel
   const seriesIds = Object.keys(FRED_SERIES);
-  const fetchPromises = seriesIds.map(id => fetchSeriesData(id, fredApiKey));
-  const results = await Promise.all(fetchPromises);
-  seriesIds.forEach((id, index) => {
-    allSeriesData[id] = results[index];
+  const fetchPromises = seriesIds.map(async (id) => {
+    const observations = await fetchSeriesData(id, fredApiKey);
+    allSeriesData[id] = transformData(id, observations);
   });
+  await Promise.all(fetchPromises);
 
-  // 2. Process and merge data
-  for (const seriesId of seriesIds) {
-    const transformedValues = transformData(seriesId, allSeriesData[seriesId], allSeriesData);
-    for (const date in transformedValues) {
-      if (!allData[date]) {
-        allData[date] = { date };
+  // 2. Create a master set of all dates
+  const allDates = new Set<string>();
+  seriesIds.forEach(id => {
+    Object.keys(allSeriesData[id]).forEach(date => allDates.add(date));
+  });
+  const sortedDates = Array.from(allDates).sort();
+
+  // 3. Upsample all series to a daily frequency by forward-filling
+  const finalData: EconomicDataPoint[] = [];
+  const lastValues: { [seriesId: string]: number | null } = {};
+  seriesIds.forEach(id => (lastValues[id] = null));
+
+  for (const date of sortedDates) {
+    const dataPoint: EconomicDataPoint = { date };
+    for (const id of seriesIds) {
+      if (allSeriesData[id][date] != null) {
+        lastValues[id] = allSeriesData[id][date];
       }
-      allData[date][seriesId] = transformedValues[date];
+      if (lastValues[id] !== null) {
+        dataPoint[id] = lastValues[id];
+      }
     }
+    finalData.push(dataPoint);
   }
 
-  // 3. Handle quarterly data forward-filling
-  const sortedDates = Object.keys(allData).sort();
-  const quarterlySeries = seriesIds.filter(id => FRED_SERIES[id].type === 'yoy_quarterly');
-  
-  quarterlySeries.forEach(id => {
-    let lastValue: number | null = null;
-    sortedDates.forEach(date => {
-      if (allData[date][id] != null) {
-        lastValue = allData[date][id] as number;
-      } else if (lastValue !== null) {
-        allData[date][id] = lastValue;
-      }
-    });
-  });
-
-  return Object.values(allData).sort((a, b) => a.date.localeCompare(b.date));
+  return finalData;
 };
