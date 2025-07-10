@@ -1,14 +1,16 @@
 // /src/components/AnalogueReportView.tsx
 import React from 'react';
 import { Box, Text } from 'ink';
-import { HistoricalAnalogue } from '../types';
+import { HistoricalAnalogue, WeightedIndicator } from '../types';
 import { renderAsciiChart } from '../utils/chart';
+import { FRED_SERIES } from '../constants';
 
 interface Props {
   analogues: HistoricalAnalogue[];
+  indicators: WeightedIndicator[];
 }
 
-const AnalogueReportView: React.FC<Props> = ({ analogues }) => {
+const AnalogueReportView: React.FC<Props> = ({ analogues, indicators }) => {
   if (!analogues || analogues.length === 0) {
     return <Text color="yellow">No historical analogues found for the given scenario.</Text>;
   }
@@ -30,39 +32,39 @@ const AnalogueReportView: React.FC<Props> = ({ analogues }) => {
           </Text>
           <Text color="gray">Similarity Score: {analogue.similarityScore.toFixed(4)} (lower is more similar)</Text>
 
-          <Box flexDirection="column" marginTop={1}>
-            <Text bold>Inflation (CPI YoY %):</Text>
-            <Box paddingLeft={2}>
-                <Text>{renderAsciiChart(analogue.data.map(d => ({value: d.cpi_yoy, label: d.date})), 5)}</Text>
+          {indicators.map(indicator => (
+            <Box flexDirection="column" marginTop={1} key={indicator.id}>
+              <Text bold>{FRED_SERIES[indicator.id]?.name || indicator.id}:</Text>
+              <Box paddingLeft={2}>
+                <Text>
+                  {renderAsciiChart(
+                    analogue.data.map(d => ({ value: d[indicator.id] as number, label: d.date })),
+                    5
+                  )}
+                </Text>
+              </Box>
             </Box>
-          </Box>
-
-          <Box flexDirection="column" marginTop={1}>
-            <Text bold>Unemployment Rate:</Text>
-            <Box paddingLeft={2}>
-                <Text>{renderAsciiChart(analogue.data.map(d => ({value: d.unemployment_rate, label: d.date})), 5)}</Text>
-            </Box>
-          </Box>
+          ))}
 
           <Box flexDirection="column" marginTop={1}>
             <Text bold>Fed Policy Action Timeline:</Text>
             {analogue.fedPolicyActions.map((action, actionIndex) => {
-                let color = 'yellow';
-                let symbol = '—';
-                if (action.action === 'HIKE') {
-                    color = 'red';
-                    symbol = '▲';
-                } else if (action.action === 'CUT') {
-                    color = 'green';
-                    symbol = '▼';
-                }
-                const change = action.changeBps !== 0 ? `(${action.changeBps > 0 ? '+' : ''}${action.changeBps} bps)` : '';
+              let color = 'yellow';
+              let symbol = '—';
+              if (action.action === 'HIKE') {
+                color = 'red';
+                symbol = '▲';
+              } else if (action.action === 'CUT') {
+                color = 'green';
+                symbol = '▼';
+              }
+              const change = action.changeBps !== 0 ? `(${action.changeBps > 0 ? '+' : ''}${action.changeBps} bps)` : '';
 
-                return (
-                    <Text key={actionIndex} color={color}>
-                        {'  '}{action.date}: {symbol} {action.action} {change}
-                    </Text>
-                );
+              return (
+                <Text key={actionIndex} color={color}>
+                  {'  '}{action.date}: {symbol} {action.action} {change}
+                </Text>
+              );
             })}
           </Box>
         </Box>

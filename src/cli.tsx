@@ -7,17 +7,19 @@ import { hideBin } from 'yargs/helpers';
 import { fetchAllEconomicData } from './services/api';
 import { initDatabase, insertData, getAllData } from './services/database';
 import { findAnalogues } from './services/analysis';
-import { ScenarioParams, HistoricalAnalogue } from './types';
+import { ScenarioParams, HistoricalAnalogue, WeightedIndicator } from './types';
+import { FRED_SERIES } from './constants';
 import LoadingSpinner from './components/Spinner';
 import StatusMessage from './components/StatusMessage';
-import AnalogueReportView from './components/AnalogueReportView'; // New component
+import AnalogueReportView from './components/AnalogueReportView';
 
 interface AppProps {
   command: string;
   params: Arguments;
+  indicators: WeightedIndicator[];
 }
 
-const App = ({ command, params }: AppProps) => {
+const App = ({ command, params, indicators }: AppProps) => {
   const [status, setStatus] = useState('Initializing...');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,18 +32,15 @@ const App = ({ command, params }: AppProps) => {
           setLoading(true);
           setStatus('Initializing database...');
           await initDatabase();
-          setStatus('Fetching economic data from FRED API...');
+          setStatus(`Fetching data for ${Object.keys(FRED_SERIES).length} series from FRED API...`);
           const data = await fetchAllEconomicData(params.apiKey as string);
           setStatus('Inserting data into the database...');
           await insertData(data);
           setStatus('Data update complete.');
-        } catch (error) {
-          if (error instanceof Error) {
-            setError(error.message);
-          } else {
-            setError('An unknown error occurred');
-          }
-        } finally {
+        } catch (e) {
+          setError(e instanceof Error ? e.message : String(e));
+        }
+        finally {
           setLoading(false);
         }
       } else if (command === 'analyze') {
@@ -53,39 +52,32 @@ const App = ({ command, params }: AppProps) => {
           const allData = await getAllData();
           
           if (allData.length < (params.months as number)) {
-            setError(`Not enough data to analyze. Need at least ${params.months} months of data. Run \`update-data\` first.`);
+            setError(`Not enough data. Need at least ${params.months} months. Run \`update-data\` first.`);
             return;
           }
 
-          // The "target scenario" is the most recent N months of data
           const targetScenario = allData.slice(-(params.months as number));
-          setStatus(`Analyzing historical data against the last ${params.months} months...`);
+          setStatus(`Analyzing data against the last ${params.months} months using ${indicators.length} indicators...`);
 
-          // Note: ScenarioParams might be deprecated or repurposed for weighting in the future
           const scenarioParams: ScenarioParams = {
-            unemployment: { min: 0, max: 100 }, // Not used in DTW analysis
-            inflation: { min: 0, max: 100 }, // Not used in DTW analysis
+            indicators,
             windowMonths: params.months as number,
-            useTariffContext: false, // Not used in DTW analysis
           };
 
           const results = findAnalogues(allData, targetScenario, scenarioParams, params.top as number);
           setAnalogues(results);
           setStatus('Analysis complete.');
-        } catch (error) {
-          if (error instanceof Error) {
-            setError(error.message);
-          } else {
-            setError('An unknown error occurred');
-          }
-        } finally {
+        } catch (e) {
+          setError(e instanceof Error ? e.message : String(e));
+        }
+        finally {
           setLoading(false);
         }
       }
     };
 
     run();
-  }, [command, params]);
+  }, [command, params, indicators]);
 
   if (loading) {
     return <LoadingSpinner message={status} />;
@@ -99,7 +91,7 @@ const App = ({ command, params }: AppProps) => {
     return (
       <Box flexDirection="column">
         <StatusMessage message={status} type="success" />
-        <AnalogueReportView analogues={analogues} />
+        <AnalogueReportView analogues={analogues} indicators={indicators} />
       </Box>
     );
   }
@@ -109,17 +101,18 @@ const App = ({ command, params }: AppProps) => {
 
 yargs(hideBin(process.argv))
   .command('update-data', 'Fetch latest economic data from FRED', (yargs) => {
-    return yargs
-      .option('api-key', {
-        describe: 'FRED API key (or set FRED_API_KEY in .env)',
-        type: 'string',
-        alias: 'k'
-      });
+    return yargs.option('api-key', { describe: 'FRED API key', type: 'string', alias: 'k' });
   }, (argv) => {
-    render(<App command="update-data" params={argv} />);
+    render(<App command="update-data" params={argv} indicators={[]} />);
   })
-  .command('analyze', 'Find historical analogues based on recent economic data', (yargs) => {
+  .command('analyze', 'Find historical analogues using weighted indicators', (yargs) => {
     return yargs
+      .option('indicator', {
+        describe: 'Indicator to analyze, with weight (e.g., UNRATE:0.4)',
+        type: 'string',
+        alias: 'i',
+        demandOption: true,
+      })
       .option('months', {
         describe: 'Number of recent months to use as the target scenario',
         type: 'number',
@@ -131,11 +124,24 @@ yargs(hideBin(process.argv))
         type: 'number',
         default: 5,
         alias: 't',
-      })
-      .example('$0 analyze -m 24 -t 10', 'Find the top 10 historical analogues to the last 24 months of data.');
+      });
   }, (argv) => {
-    render(<App command="analyze" params={argv} />);
+    const indicators: WeightedIndicator[] = (Array.isArray(argv.indicator) ? argv.indicator : [argv.indicator]).map(ind => {
+      const [id, weightStr] = ind.split(':');
+      if (!id || !weightStr || !FRED_SERIES[id]) {
+        throw new Error(`Invalid indicator format or ID: ${ind}. Use format like UNRATE:0.5`);
+      }
+      return { id, weight: parseFloat(weightStr) };
+    });
+
+    const totalWeight = indicators.reduce((sum, ind) => sum + ind.weight, 0);
+    if (Math.abs(totalWeight - 1.0) > 0.001) {
+      throw new Error(`Indicator weights must sum to 1.0. Current sum: ${totalWeight}`);
+    }
+
+    render(<App command="analyze" params={argv} indicators={indicators} />);
   })
-  .demandCommand(1, 'You need to specify a command: `update-data` or `analyze`.')
+  .demandCommand(1, 'You need to specify a command: \`update-data\` or \`analyze\`.')
   .help()
+  .example('$0 analyze -i UNRATE:0.5 -i CPIAUCSL:0.5 -m 12', 'Analyze with 50/50 weighting on unemployment and inflation.')
   .argv;

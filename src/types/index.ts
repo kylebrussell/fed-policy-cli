@@ -1,29 +1,32 @@
 // /src/types/index.ts
 
+// A flexible data point that can hold any indicator
 export interface EconomicDataPoint {
   date: string; // YYYY-MM-DD
-  unemployment_rate?: number;
-  cpi_yoy?: number;
-  fed_funds_rate?: number;
+  [indicator: string]: number | string; // e.g., UNRATE: 4.1, CPIAUCSL_yoy: 3.2
+}
+
+// Defines a user-selected indicator and its weight
+export interface WeightedIndicator {
+  id: string; // e.g., 'UNRATE'
+  weight: number; // e.g., 0.5
 }
 
 export interface ScenarioParams {
-  unemployment: { min: number; max: number };
-  inflation: { min: number; max: number };
+  indicators: WeightedIndicator[];
   windowMonths: number;
-  useTariffContext: boolean;
 }
 
 export interface HistoricalAnalogue {
   startDate: string;
   endDate: string;
-  similarityScore: number; // New field for ranking
-  data: EconomicDataPoint[]; // The actual data for the period
-  fedPolicyActions: FedPolicyAction[]; // Timeline of Fed actions
+  similarityScore: number;
+  data: EconomicDataPoint[];
+  fedPolicyActions: FedPolicyAction[];
 }
 
 export interface FedPolicyAction {
   date: string;
   action: 'HIKE' | 'CUT' | 'HOLD';
-  changeBps?: number; // Basis points change
+  changeBps?: number;
 }

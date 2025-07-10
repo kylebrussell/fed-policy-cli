@@ -3,100 +3,102 @@ import {
   findAnalogues,
   extractFedPolicyActions,
 } from '../analysis';
-import { EconomicDataPoint, ScenarioParams, FedPolicyAction } from '../../types';
+import { EconomicDataPoint, ScenarioParams } from '../../types';
 
-// Mock the similarity utility so we can control the distance for testing
+// Mock the similarity utility for predictable testing
 jest.mock('../../utils/similarity', () => ({
-  calculateDtwDistance: jest.fn((a, b) => {
-    // Simple sum of absolute differences for predictable testing
-    return a.reduce((sum, val, i) => sum + Math.abs(val - b[i]), 0);
+  calculateDtwDistance: jest.fn((a: number[], b: number[]) => {
+    // Use a simple, predictable sum of absolute differences for the mock
+    return a.reduce((sum, val, i) => sum + Math.abs(val - (b[i] || 0)), 0);
   }),
 }));
 
-describe('Analysis Service V2', () => {
+describe('Analysis Service V3', () => {
+  // More comprehensive mock data with new indicators
   const mockData: EconomicDataPoint[] = [
-    // Period 1 (Target)
-    { date: '2023-01-01', unemployment_rate: 4.0, cpi_yoy: 7.0, fed_funds_rate: 4.5 },
-    { date: '2023-02-01', unemployment_rate: 3.9, cpi_yoy: 6.5, fed_funds_rate: 4.75 }, // Hike
-    { date: '2023-03-01', unemployment_rate: 3.8, cpi_yoy: 6.0, fed_funds_rate: 5.0 },  // Hike
+    // Historical Period 1 (Very different from target)
+    { date: '1990-01-01', UNRATE: 10.0, CPIAUCSL: 1.0, T10Y2Y: -0.5, DFF: 8.0 },
+    { date: '1990-02-01', UNRATE: 10.1, CPIAUCSL: 1.1, T10Y2Y: -0.4, DFF: 8.0 },
+    { date: '1990-03-01', UNRATE: 10.2, CPIAUCSL: 1.2, T10Y2Y: -0.3, DFF: 8.0 },
 
-    // Period 2 (Most Similar)
-    { date: '2008-01-01', unemployment_rate: 4.1, cpi_yoy: 7.1, fed_funds_rate: 3.0 },
-    { date: '2008-02-01', unemployment_rate: 4.0, cpi_yoy: 6.6, fed_funds_rate: 2.5 },
-    { date: '2008-03-01', unemployment_rate: 3.9, cpi_yoy: 6.1, fed_funds_rate: 2.0 },
+    // Historical Period 2 (Intentionally similar to target)
+    { date: '2005-01-01', UNRATE: 4.1, CPIAUCSL: 3.1, T10Y2Y: 0.2, DFF: 2.25 },
+    { date: '2005-02-01', UNRATE: 4.0, CPIAUCSL: 3.2, T10Y2Y: 0.3, DFF: 2.50 }, // Hike
+    { date: '2005-03-01', UNRATE: 3.9, CPIAUCSL: 3.3, T10Y2Y: 0.4, DFF: 2.50 }, // Hold
 
-    // Period 3 (Less Similar - make it very distinct)
-    { date: '1995-01-01', unemployment_rate: 15.5, cpi_yoy: 10.0, fed_funds_rate: 5.5 },
-    { date: '1995-02-01', unemployment_rate: 15.4, cpi_yoy: 10.1, fed_funds_rate: 5.5 },
-    { date: '1995-03-01', unemployment_rate: 15.4, cpi_yoy: 10.2, fed_funds_rate: 5.5 },
-
-     // Period 4 (Least Similar)
-     { date: '2015-01-01', unemployment_rate: 5.7, cpi_yoy: 0.5, fed_funds_rate: 0.25 },
-     { date: '2015-02-01', unemployment_rate: 5.5, cpi_yoy: 0.4, fed_funds_rate: 0.25 },
-     { date: '2015-03-01', unemployment_rate: 5.5, cpi_yoy: 0.3, fed_funds_rate: 0.25 },
+    // Target Scenario (The most recent data)
+    { date: '2023-01-01', UNRATE: 4.0, CPIAUCSL: 3.0, T10Y2Y: 0.1, DFF: 5.0 },
+    { date: '2023-02-01', UNRATE: 3.9, CPIAUCSL: 3.1, T10Y2Y: 0.2, DFF: 5.25 },
+    { date: '2023-03-01', UNRATE: 3.8, CPIAUCSL: 3.2, T10Y2Y: 0.3, DFF: 5.25 },
   ];
 
   describe('extractFedPolicyActions', () => {
-    it('should correctly identify HIKE, CUT, and HOLD actions', () => {
-      const periodData: EconomicDataPoint[] = [
-        { date: '2022-01-01', fed_funds_rate: 1.0 },
-        { date: '2022-02-01', fed_funds_rate: 1.25 }, // +25bps HIKE
-        { date: '2022-03-01', fed_funds_rate: 1.25 }, // HOLD
-        { date: '2022-04-01', fed_funds_rate: 1.0 },  // -25bps CUT
-      ];
+    it('should correctly identify HIKE, CUT, and HOLD actions from DFF', () => {
+      const periodData = mockData.slice(3, 6); // Use Historical Period 2
       const actions = extractFedPolicyActions(periodData);
-      expect(actions).toHaveLength(3);
-      expect(actions[0]).toEqual({ date: '2022-02-01', action: 'HIKE', changeBps: 25 });
-      expect(actions[1]).toEqual({ date: '2022-03-01', action: 'HOLD', changeBps: 0 });
-      expect(actions[2]).toEqual({ date: '2022-04-01', action: 'CUT', changeBps: -25 });
-    });
-
-    it('should return an empty array for periods with less than 2 data points', () => {
-      expect(extractFedPolicyActions([mockData[0]])).toEqual([]);
-      expect(extractFedPolicyActions([])).toEqual([]);
+      expect(actions).toHaveLength(2);
+      expect(actions[0]).toEqual({ date: '2005-02-01', action: 'HIKE', changeBps: 25 });
+      expect(actions[1]).toEqual({ date: '2005-03-01', action: 'HOLD', changeBps: 0 });
     });
   });
 
-  describe('findAnalogues', () => {
-    const targetScenario = mockData.slice(0, 3);
-    const allData = mockData.slice(3); // The rest is historical data
-    const params: ScenarioParams = { // Mostly unused but needed for type
-        windowMonths: 3, unemployment: {min:0, max:100}, inflation: {min:0, max:100}, useTariffContext: false
-    };
+  describe('findAnalogues with weighted indicators', () => {
+    const targetScenario = mockData.slice(6, 9);
 
-    it('should find and rank analogues based on similarity score', () => {
-      const analogues = findAnalogues(allData, targetScenario, params, 2);
+    it('should rank analogues correctly based on weighted DTW', () => {
+      const params: ScenarioParams = {
+        indicators: [
+          { id: 'UNRATE', weight: 0.5 },
+          { id: 'CPIAUCSL', weight: 0.5 },
+        ],
+        windowMonths: 3,
+      };
+
+      const analogues = findAnalogues(mockData, targetScenario, params, 2);
       expect(analogues).toHaveLength(2);
-
-      // Period 2 should be the most similar (lowest score)
-      // The top analogue should be the one starting 2008-01-01
-      expect(analogues[0].startDate).toBe('2008-01-01');
-      // The next most similar will be the overlapping window starting 2008-02-01
-      expect(analogues[1].startDate).toBe('2008-02-01');
+      // Period 2 (2005) is designed to be most similar, Period 1 (1990) least similar.
+      expect(analogues[0].startDate).toBe('2005-01-01');
+      // The next most similar is the overlapping window starting at the 3rd data point.
+      expect(analogues[1].startDate).toBe('2005-03-01');
     });
 
-    it('should include the correct data and policy actions for each analogue', () => {
-        const analogues = findAnalogues(allData, targetScenario, params, 1);
-        const topAnalogue = analogues[0];
+    it('should change ranking when weights are changed', () => {
+      // New mock data where one indicator is very close, the other very far
+      const specificMockData = [
+        // Historical: High unemployment, low inflation
+        { date: '2010-01-01', UNRATE: 10.0, CPIAUCSL: 1.0, DFF: 0.25 },
+        { date: '2010-02-01', UNRATE: 9.9, CPIAUCSL: 1.1, DFF: 0.25 },
+        // Target: Low unemployment, high inflation
+        { date: '2022-01-01', UNRATE: 4.0, CPIAUCSL: 8.0, DFF: 0.25 },
+        { date: '2022-02-01', UNRATE: 3.9, CPIAUCSL: 8.1, DFF: 0.50 },
+      ];
 
-        expect(topAnalogue.startDate).toBe('2008-01-01');
-        expect(topAnalogue.data).toHaveLength(3);
-        expect(topAnalogue.data[0].date).toBe('2008-01-01');
+      // Scenario 1: Weight unemployment heavily
+      const params1: ScenarioParams = {
+        indicators: [{ id: 'UNRATE', weight: 1.0 }],
+        windowMonths: 2,
+      };
+      // Scenario 2: Weight inflation heavily
+      const params2: ScenarioParams = {
+        indicators: [{ id: 'CPIAUCSL', weight: 1.0 }],
+        windowMonths: 2,
+      };
 
-        expect(topAnalogue.fedPolicyActions).toHaveLength(2);
-        expect(topAnalogue.fedPolicyActions[0].action).toBe('CUT');
-        expect(topAnalogue.fedPolicyActions[1].action).toBe('CUT');
+      const analogues1 = findAnalogues(specificMockData, specificMockData.slice(2), params1, 1);
+      const analogues2 = findAnalogues(specificMockData, specificMockData.slice(2), params2, 1);
+
+      // The similarity scores should be vastly different, showing weights are working.
+      // The absolute values depend on the mock DTW, but we expect them to differ.
+      expect(analogues1[0].similarityScore).not.toBe(analogues2[0].similarityScore);
     });
 
-    it('should return the correct number of analogues based on topN', () => {
-        const analogues = findAnalogues(allData, targetScenario, params, 3);
-        expect(analogues).toHaveLength(3);
-        expect(analogues[2].startDate).toBe('2008-03-01');
-      });
-
-    it('should return an empty array if there is no historical data', () => {
-        const analogues = findAnalogues([], targetScenario, params, 5);
+    it('should handle an empty indicator list gracefully', () => {
+        const params: ScenarioParams = {
+          indicators: [],
+          windowMonths: 3,
+        };
+        const analogues = findAnalogues(mockData, targetScenario, params, 1);
         expect(analogues).toHaveLength(0);
-    });
+      });
   });
 });

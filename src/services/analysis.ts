@@ -4,6 +4,7 @@ import {
   ScenarioParams,
   HistoricalAnalogue,
   FedPolicyAction,
+  WeightedIndicator,
 } from '../types';
 import { calculateDtwDistance } from '../utils/similarity';
 
@@ -21,8 +22,8 @@ export function extractFedPolicyActions(periodData: EconomicDataPoint[]): FedPol
   for (let i = 1; i < periodData.length; i++) {
     const prev = periodData[i - 1];
     const curr = periodData[i];
-    const prevRate = prev.fed_funds_rate;
-    const currRate = curr.fed_funds_rate;
+    const prevRate = prev.DFF as number;
+    const currRate = curr.DFF as number;
 
     if (typeof prevRate === 'number' && typeof currRate === 'number') {
       const changeBps = Math.round((currRate - prevRate) * 100);
@@ -44,53 +45,80 @@ export function extractFedPolicyActions(periodData: EconomicDataPoint[]): FedPol
   return actions;
 }
 
+// Helper to normalize a single series (0 to 1 scale)
+const normalizeSeries = (series: number[]): number[] => {
+  const min = Math.min(...series);
+  const max = Math.max(...series);
+  const range = max - min;
+  if (range === 0) return series.map(() => 0.5); // All values are the same
+  return series.map(val => (val - min) / range);
+};
+
 /**
- * Finds the most similar historical periods to a target scenario using DTW.
+ * Finds the most similar historical periods to a target scenario using weighted DTW.
  * @param allData - The entire historical dataset.
  * @param targetScenario - The recent data slice to compare against.
- * @param params - Parameters for the analysis.
+ * @param params - Parameters for the analysis, including weighted indicators.
  * @param topN - The number of top analogues to return.
  * @returns A ranked array of HistoricalAnalogue objects.
  */
 export function findAnalogues(
   allData: EconomicDataPoint[],
   targetScenario: EconomicDataPoint[],
-  params: ScenarioParams, // Keep params for future use (e.g., weighting)
+  params: ScenarioParams,
   topN: number = 5
 ): HistoricalAnalogue[] {
-  const analogues: Omit<HistoricalAnalogue, 'fedPolicyActions'>[] = [];
-  const targetSeries = targetScenario.map(d => d.cpi_yoy || 0); // Using CPI for now
-
+  const { indicators } = params;
   const windowSize = targetScenario.length;
-  if (windowSize === 0) {
+
+  if (windowSize === 0 || indicators.length === 0) {
     return [];
   }
 
-  for (let i = 0; i <= allData.length - windowSize; i++) {
-    const historicalWindow = allData.slice(i, i + windowSize);
-    const historicalSeries = historicalWindow.map(d => d.cpi_yoy || 0);
+  // 1. Normalize all relevant series across the entire dataset
+  const normalizedData: { [indicatorId: string]: number[] } = {};
+  for (const indicator of indicators) {
+    const fullSeries = allData.map(d => d[indicator.id] as number);
+    normalizedData[indicator.id] = normalizeSeries(fullSeries);
+  }
 
-    // Avoid comparing the target scenario with itself
-    if (historicalWindow[0].date === targetScenario[0].date) {
+  // 2. Create the normalized target vector
+  const targetStartIndex = allData.length - windowSize;
+  const getNormalizedWindow = (startIndex: number, indicatorId: string) => {
+    return normalizedData[indicatorId].slice(startIndex, startIndex + windowSize);
+  };
+
+  // 3. Iterate through historical windows and calculate weighted DTW distance
+  const analogues: Omit<HistoricalAnalogue, 'fedPolicyActions'>[] = [];
+  for (let i = 0; i <= allData.length - windowSize; i++) {
+    // Avoid comparing the scenario with itself
+    if (i === targetStartIndex) {
       continue;
     }
 
-    const distance = calculateDtwDistance(targetSeries, historicalSeries);
+    let totalWeightedDistance = 0;
+    for (const indicator of indicators) {
+      const targetSeries = getNormalizedWindow(targetStartIndex, indicator.id);
+      const historicalSeries = getNormalizedWindow(i, indicator.id);
+      
+      const distance = calculateDtwDistance(targetSeries, historicalSeries);
+      totalWeightedDistance += distance * indicator.weight;
+    }
 
+    const historicalWindow = allData.slice(i, i + windowSize);
     analogues.push({
       startDate: historicalWindow[0].date,
       endDate: historicalWindow[historicalWindow.length - 1].date,
-      similarityScore: distance,
+      similarityScore: totalWeightedDistance,
       data: historicalWindow,
     });
   }
 
-  // Sort by similarity score (lower is better) and take the top N
+  // 4. Sort by similarity and enrich with policy actions
   const topAnalogues = analogues
     .sort((a, b) => a.similarityScore - b.similarityScore)
     .slice(0, topN);
 
-  // Now, enrich the top analogues with policy action details
   const detailedAnalogues: HistoricalAnalogue[] = topAnalogues.map(analogue => {
     const fedPolicyActions = extractFedPolicyActions(analogue.data);
     return { ...analogue, fedPolicyActions };

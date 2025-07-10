@@ -1,10 +1,14 @@
 // /src/constants.ts
 
-// FRED API Series IDs
+// FRED API Series IDs and metadata
 export const FRED_SERIES = {
-  UNEMPLOYMENT: 'UNRATE',
-  CPI: 'CPIAUCSL', // Note: Will need to calculate YoY % change
-  FED_FUNDS: 'DFF',
+  UNRATE: { name: 'Unemployment Rate', type: 'level' },
+  CPIAUCSL: { name: 'CPI (Inflation)', type: 'yoy' },
+  DFF: { name: 'Federal Funds Rate', type: 'level' },
+  PCEPI: { name: 'PCE (Core Inflation)', type: 'yoy' },
+  GDPC1: { name: 'Real GDP', type: 'yoy_quarterly' },
+  T10Y2Y: { name: '10-2 Year Treasury Spread', type: 'level' },
+  ICSA: { name: 'Initial Claims', type: 'level' },
 };
 
 // FRED API base URL
@@ -28,10 +32,3 @@ export const getFredApiKey = (cliApiKey?: string): string => {
 
 // Path for the local database
 export const DB_PATH = './data/economic_data.sqlite';
-
-// Hardcoded list of significant tariff periods for context
-export const TARIFF_PERIODS = [
-  { name: 'Smoot-Hawley Act', start: '1930-06-17', end: '1934-06-12' },
-  { name: '2018-2019 China Tariffs', start: '2018-03-01', end: '2020-01-15' },
-  { name: '2025 Liberation Day Tariffs', start: '2025-01-20', end: null },
-];
