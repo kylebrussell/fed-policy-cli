@@ -84,3 +84,141 @@ export const PERIOD_EXCLUSION = {
     }
   }
 };
+
+// Economic Regime Templates
+// Pre-built scenarios for common economic research queries
+export const ECONOMIC_TEMPLATES = {
+  'stagflation-hunt': {
+    id: 'stagflation-hunt',
+    name: 'Stagflation Hunt',
+    description: 'Find periods of high inflation combined with high unemployment - the classic stagflation scenario',
+    category: 'inflation' as const,
+    indicators: [
+      { id: 'UNRATE', weight: 0.4 },        // High unemployment is key
+      { id: 'CPIAUCSL', weight: 0.4 },      // High inflation is key
+      { id: 'DFF', weight: 0.2 }            // Fed response to stagflation
+    ],
+    defaultParams: {
+      excludeRecentYears: 15, // Focus on historical periods
+    },
+    focusEras: ['stagflation', 'volcker'],
+    economicRationale: 'Stagflation is characterized by simultaneous high unemployment and high inflation, requiring equal weighting of both indicators. Fed policy response is secondary but important for understanding monetary policy constraints.',
+    examples: ['1970s Oil Crisis periods', 'Late 1970s Volcker pre-tightening', '1973-1975 recession with inflation']
+  },
+
+  'financial-crisis': {
+    id: 'financial-crisis',
+    name: 'Financial Crisis Patterns',
+    description: 'Identify periods of financial stress with unemployment spikes, yield curve inversions, and emergency Fed policy',
+    category: 'crisis' as const,
+    indicators: [
+      { id: 'UNRATE', weight: 0.3 },        // Unemployment spike
+      { id: 'T10Y2Y', weight: 0.3 },        // Yield curve inversion
+      { id: 'DFF', weight: 0.2 },           // Emergency Fed cuts
+      { id: 'ICSA', weight: 0.2 }           // Initial claims surge
+    ],
+    defaultParams: {
+      excludeRecentYears: 5,
+    },
+    focusEras: ['financial-crisis', 'dot-com', 'modern'],
+    economicRationale: 'Financial crises manifest through rapid unemployment increases, yield curve distortions, emergency Fed rate cuts, and surging unemployment claims. This template weights labor market stress and credit market signals equally.',
+    examples: ['2008 Great Financial Crisis', '2001 Dot-com crash', '2020 COVID economic shock']
+  },
+
+  'policy-tightening': {
+    id: 'policy-tightening',
+    name: 'Policy Tightening Cycles',
+    description: 'Analyze Fed tightening cycles with focus on inflation control and economic cooling',
+    category: 'policy' as const,
+    indicators: [
+      { id: 'DFF', weight: 0.4 },           // Fed policy is primary
+      { id: 'CPIAUCSL', weight: 0.3 },      // Inflation target
+      { id: 'UNRATE', weight: 0.2 },        // Economic cooling
+      { id: 'T10Y2Y', weight: 0.1 }         // Monetary policy transmission
+    ],
+    defaultParams: {
+      excludeRecentYears: 3,
+    },
+    economicRationale: 'Policy tightening cycles are driven primarily by Fed rate changes in response to inflation, with employment and yield curve effects secondary. Higher Fed funds weight captures the primary policy tool.',
+    examples: ['Volcker inflation fight 1979-1982', 'Greenspan rate hikes 1994-1995', 'Powell tightening 2022-2023']
+  },
+
+  'recession-early-warning': {
+    id: 'recession-early-warning',
+    name: 'Recession Early Warning',
+    description: 'Detect recession precursors through leading indicators and economic stress signals',
+    category: 'recession' as const,
+    indicators: [
+      { id: 'T10Y2Y', weight: 0.3 },        // Yield curve inversion (leading)
+      { id: 'ICSA', weight: 0.25 },         // Claims upturn (leading)
+      { id: 'GDPC1', weight: 0.25 },        // GDP slowdown
+      { id: 'UNRATE', weight: 0.2 }         // Employment deterioration
+    ],
+    defaultParams: {
+      months: 6, // Shorter window for early signals
+    },
+    economicRationale: 'Recession early warning relies on leading indicators like yield curve inversion and initial claims increases, combined with real economy slowdown signals. GDP and unemployment provide confirming evidence.',
+    examples: ['Pre-2008 yield curve signals', 'Pre-2001 economic deterioration', 'Pre-1991 recession indicators']
+  },
+
+  'inflation-regime': {
+    id: 'inflation-regime',
+    name: 'Inflation Regime Analysis',
+    description: 'Focus on inflationary periods and Fed response across different price measures',
+    category: 'inflation' as const,
+    indicators: [
+      { id: 'CPIAUCSL', weight: 0.4 },      // Headline inflation
+      { id: 'PCEPI', weight: 0.3 },         // Fed preferred measure
+      { id: 'DFF', weight: 0.3 }            // Fed policy response
+    ],
+    economicRationale: 'Inflation analysis requires dual inflation measures (CPI for public perception, PCE for Fed policy) with significant weight on Fed response. Labor market excluded to focus purely on price dynamics.',
+    examples: ['1970s Great Inflation', '1980s disinflation', '2021-2023 post-pandemic inflation']
+  },
+
+  'labor-market-stress': {
+    id: 'labor-market-stress',
+    name: 'Labor Market Stress',
+    description: 'Analyze periods of labor market deterioration and unemployment spikes',
+    category: 'recession' as const,
+    indicators: [
+      { id: 'UNRATE', weight: 0.5 },        // Primary unemployment measure
+      { id: 'ICSA', weight: 0.3 },          // Leading labor indicator
+      { id: 'GDPC1', weight: 0.2 }          // Economic context
+    ],
+    defaultParams: {
+      focusEras: ['financial-crisis', 'stagflation', 'recession-periods'],
+    },
+    economicRationale: 'Labor market stress is best captured by unemployment rate changes with leading indication from initial claims. GDP provides economic context but employment is the primary focus.',
+    examples: ['1982 unemployment peak', '2009 Great Recession joblessness', '2020 pandemic unemployment spike']
+  },
+
+  'yield-curve-analysis': {
+    id: 'yield-curve-analysis',
+    name: 'Yield Curve Analysis',
+    description: 'Study yield curve dynamics and their relationship with Fed policy and economic cycles',
+    category: 'policy' as const,
+    indicators: [
+      { id: 'T10Y2Y', weight: 0.5 },        // Primary yield curve measure
+      { id: 'DFF', weight: 0.3 },           // Fed policy driver
+      { id: 'GDPC1', weight: 0.2 }          // Economic growth context
+    ],
+    economicRationale: 'Yield curve analysis focuses on the spread as the primary signal, with Fed policy as the key driver and economic growth providing context for interpretation.',
+    examples: ['Yield curve inversions before recessions', 'Steepening during recoveries', 'Policy transmission effects']
+  },
+
+  'balanced-economic': {
+    id: 'balanced-economic',
+    name: 'Balanced Economic Analysis',
+    description: 'Comprehensive economic analysis with equal weighting across major economic indicators',
+    category: 'general' as const,
+    indicators: [
+      { id: 'UNRATE', weight: 0.2 },        // Labor market
+      { id: 'CPIAUCSL', weight: 0.2 },      // Inflation
+      { id: 'DFF', weight: 0.2 },           // Monetary policy
+      { id: 'GDPC1', weight: 0.2 },         // Economic growth
+      { id: 'T10Y2Y', weight: 0.2 }         // Financial markets
+    ],
+    economicRationale: 'Balanced approach giving equal weight to major economic pillars: employment, inflation, monetary policy, growth, and financial market signals. Suitable for general economic period comparisons.',
+    examples: ['Any historical period with similar overall economic conditions']
+  }
+};

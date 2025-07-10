@@ -8,7 +8,7 @@ import { fetchAllEconomicData } from './services/api';
 import { initDatabase, insertData, getAllData } from './services/database';
 import { findAnalogues } from './services/analysis';
 import { ScenarioParams, HistoricalAnalogue, WeightedIndicator } from './types';
-import { FRED_SERIES } from './constants';
+import { FRED_SERIES, ECONOMIC_TEMPLATES } from './constants';
 import LoadingSpinner from './components/Spinner';
 import StatusMessage from './components/StatusMessage';
 import AnalogueReportView from './components/AnalogueReportView';
@@ -109,13 +109,28 @@ yargs(hideBin(process.argv))
   }, (argv) => {
     render(<App command="update-data" params={argv} indicators={[]} />);
   })
+  .command('list-templates', 'List available economic analysis templates', () => {}, (argv) => {
+    console.log('\nAvailable Economic Analysis Templates:\n');
+    Object.values(ECONOMIC_TEMPLATES).forEach(template => {
+      console.log(`${template.id}:`);
+      console.log(`  Name: ${template.name}`);
+      console.log(`  Category: ${template.category}`);
+      console.log(`  Description: ${template.description}`);
+      console.log(`  Indicators: ${template.indicators.map(i => `${i.id}:${i.weight}`).join(', ')}\n`);
+    });
+    process.exit(0);
+  })
   .command('analyze', 'Find historical analogues using weighted indicators', (yargs) => {
     return yargs
+      .option('template', {
+        describe: 'Use a predefined economic analysis template (e.g., stagflation-hunt, financial-crisis)',
+        type: 'string',
+        alias: 'T',
+      })
       .option('indicator', {
         describe: 'Indicator to analyze, with weight (e.g., UNRATE:0.4)',
         type: 'string',
         alias: 'i',
-        demandOption: true,
       })
       .option('months', {
         describe: 'Number of recent months to use as the target scenario',
@@ -149,24 +164,49 @@ yargs(hideBin(process.argv))
         describe: 'Exclude specific economic eras from analysis (e.g., --exclude-era modern)',
         type: 'string',
         alias: 'e',
+      })
+      .check((argv) => {
+        // Either template or indicator must be specified
+        if (!argv.template && !argv.indicator) {
+          throw new Error('Either --template or --indicator must be specified');
+        }
+        if (argv.template && argv.indicator) {
+          throw new Error('Cannot use both --template and --indicator options together');
+        }
+        return true;
       });
   }, (argv) => {
-    const indicators: WeightedIndicator[] = (Array.isArray(argv.indicator) ? argv.indicator : [argv.indicator]).map(ind => {
-      const [id, weightStr] = ind.split(':');
-      if (!id || !weightStr || !FRED_SERIES[id]) {
-        throw new Error(`Invalid indicator format or ID: ${ind}. Use format like UNRATE:0.5`);
-      }
-      return { id, weight: parseFloat(weightStr) };
-    });
+    let indicators: WeightedIndicator[];
+    let templateUsed: string | undefined;
 
-    const totalWeight = indicators.reduce((sum, ind) => sum + ind.weight, 0);
-    if (Math.abs(totalWeight - 1.0) > 0.001) {
-      throw new Error(`Indicator weights must sum to 1.0. Current sum: ${totalWeight}`);
+    if (argv.template) {
+      // Use template
+      templateUsed = argv.template as string;
+      if (!ECONOMIC_TEMPLATES[templateUsed]) {
+        throw new Error(`Unknown template: ${templateUsed}. Use 'list-templates' to see available options.`);
+      }
+      indicators = ECONOMIC_TEMPLATES[templateUsed].indicators;
+    } else {
+      // Use manual indicators
+      indicators = (Array.isArray(argv.indicator) ? argv.indicator : [argv.indicator]).map(ind => {
+        const [id, weightStr] = ind.split(':');
+        if (!id || !weightStr || !FRED_SERIES[id]) {
+          throw new Error(`Invalid indicator format or ID: ${ind}. Use format like UNRATE:0.5`);
+        }
+        return { id, weight: parseFloat(weightStr) };
+      });
+
+      const totalWeight = indicators.reduce((sum, ind) => sum + ind.weight, 0);
+      if (Math.abs(totalWeight - 1.0) > 0.001) {
+        throw new Error(`Indicator weights must sum to 1.0. Current sum: ${totalWeight}`);
+      }
     }
 
     render(<App command="analyze" params={argv} indicators={indicators} />);
   })
-  .demandCommand(1, 'You need to specify a command: \`update-data\` or \`analyze\`.')
+  .demandCommand(1, 'You need to specify a command: \`update-data\`, \`analyze\`, or \`list-templates\`.')
   .help()
+  .example('$0 analyze -T stagflation-hunt -m 12', 'Use the stagflation template for analysis.')
   .example('$0 analyze -i UNRATE:0.5 -i CPIAUCSL:0.5 -m 12', 'Analyze with 50/50 weighting on unemployment and inflation.')
+  .example('$0 list-templates', 'Show all available economic analysis templates.')
   .argv;

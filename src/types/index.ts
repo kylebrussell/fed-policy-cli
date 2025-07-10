@@ -29,6 +29,19 @@ export interface DateRange {
   description?: string; // Optional description of what this range represents
 }
 
+export interface EconomicTemplate {
+  id: string; // Unique identifier for the template
+  name: string; // Display name for the template
+  description: string; // Detailed description of what this template analyzes
+  category: 'crisis' | 'policy' | 'inflation' | 'recession' | 'general'; // Category for organization
+  indicators: WeightedIndicator[]; // Predefined indicator weights
+  defaultParams?: Partial<ScenarioParams>; // Optional default parameters (months, exclusions, etc.)
+  focusEras?: string[]; // Recommended eras to focus on
+  excludeEras?: string[]; // Recommended eras to exclude
+  economicRationale: string; // Explanation of why these indicators and weights make sense
+  examples?: string[]; // Example historical periods this template might find
+}
+
 export interface HistoricalAnalogue {
   startDate: string;
   endDate: string;
