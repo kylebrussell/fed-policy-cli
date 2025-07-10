@@ -2,13 +2,14 @@
 
 A powerful command-line tool for analyzing the U.S. economy and Federal Reserve policy. Find historical periods that are statistically similar to the present (or any other period) using a flexible, weighted analysis of key economic indicators.
 
-## Features
+## Key Features
 
-- **Flexible Analysis Engine**: Compare historical periods using any combination of supported economic indicators.
-- **Weighted Scenarios**: Assign weights to each indicator to define your analytical priorities.
-- **Similarity Search**: Uses Dynamic Time Warping (DTW) to find historical analogues based on the *shape* and *trajectory* of the data, not just absolute values.
-- **Rich Terminal UI**: Displays detailed reports with ASCII charts for each indicator and a concise timeline of Fed policy actions.
-- **Broad Economic Dataset**: Fetches and stores data for a wide range of key indicators from the FRED API.
+- **Intelligent Historical Analysis**: Goes beyond simple search to find genuinely diverse and meaningful historical analogues, avoiding redundant, overlapping results.
+- **Economic Era Awareness**: The algorithm understands different economic periods (e.g., "Stagflation", "Dot-Com Boom", "Financial Crisis") and scores results to ensure you see a broad range of historical contexts.
+- **Flexible Analysis Engine**: Compare historical periods using any combination of supported economic indicators with custom weights.
+- **Scenario Templates**: Jumpstart your research with pre-built templates for common economic scenarios like "Stagflation Hunt" or "Policy Tightening Cycles".
+- **Rich Terminal UI**: Displays detailed reports with meaningful ASCII charts and a clear timeline of Fed policy actions.
+- **Data Quality Filtering**: Automatically filters out unreliable early-period data to improve the accuracy of results.
 
 ## Installation
 
@@ -49,9 +50,9 @@ npm run dev -- update-data
 
 This command fetches and processes data for all indicators listed in `src/constants.ts`.
 
-### 2. Analyze Scenarios
+### 2. Basic Analysis
 
-Find historical analogues by defining a weighted basket of indicators. The analysis always compares against the most recent data for the specified number of months.
+Find historical analogues by defining a weighted basket of indicators. The analysis compares against the most recent data.
 
 **Example:** Find the top 5 historical periods that look most like the last 18 months, with a 60% weight on inflation and 40% on the yield curve.
 
@@ -59,21 +60,56 @@ Find historical analogues by defining a weighted basket of indicators. The analy
 npm run dev -- analyze -m 18 -t 5 -i CPIAUCSL:0.6 -i T10Y2Y:0.4
 ```
 
-**Example:** Find the period most similar to the last 3 years, based only on Real GDP growth.
+### 3. Using Scenario Templates
 
+Use pre-built templates for common research questions.
+
+**List available templates:**
 ```bash
-npm run dev -- analyze -m 36 -t 1 -i GDPC1:1.0
+npm run dev -- list-templates
 ```
 
-### Command-Line Arguments
+**Use a template:**
+```bash
+npm run dev -- analyze --template stagflation-hunt
+```
 
-**`analyze` command:**
+### 4. Advanced Historical Analysis
+
+Focus your search on specific timeframes or exclude irrelevant periods.
+
+**Example:** Find analogues, but exclude the last 10 years to find deeper historical parallels.
+```bash
+npm run dev -- analyze --template balanced-economic --exclude-recent-years 10
+```
+
+**Example:** Focus the search specifically on the "Stagflation" and "Volcker" eras.
+```bash
+npm run dev -- analyze -i UNRATE:1.0 --focus-era stagflation --focus-era volcker
+```
+
+## Commands and Arguments
+
+### `analyze`
+The main command for running an analysis.
 
 -   `-i, --indicator`: An indicator to include, with a weight (e.g., `UNRATE:0.5`). Can be used multiple times. **Weights must sum to 1.0**.
 -   `-m, --months`: The number of recent months to use as the target scenario for comparison (default: 12).
 -   `-t, --top`: The number of top analogues to return (default: 5).
+-   `--template`: Use a pre-defined scenario template (e.g., `stagflation-hunt`).
+-   `--exclude-recent-years`: Exclude a number of recent years from the search.
+-   `--focus-era`: Focus the search on a specific economic era. Can be used multiple times.
+-   `--exclude-era`: Exclude a specific economic era from the search. Can be used multiple times.
+-   `--include-unreliable`: Include pre-1960 data that is filtered out by default.
 
-**Supported Indicators:**
+### `list-templates`
+Lists all available scenario templates.
+
+### `update-data`
+Fetches the latest economic data from the FRED API.
+- `--api-key`: Your FRED API key (if not in `.env`).
+
+## Supported Indicators
 
 | ID       | Description                 |
 | :------- | :-------------------------- |
