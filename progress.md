@@ -386,6 +386,7 @@ This document tracks the development progress against the implementation plan. C
 - ✅ **FOMC Meeting Integration**: Shows both action and no-action meetings for complete policy picture
 - ✅ **Interactive Policy Simulator**: What-if scenario modeling with 4 policy paths and 6-month projections
 - ✅ **Fed Reaction Function Dashboard**: Real-time policy triggers, pressure gauge, and rate change probabilities
+- ✅ **Policy Impact Scorecard**: Dual mandate scoring, response profiles, and transmission lag analysis
 - ✅ **Updated Documentation**: README now includes simulate command and enhanced Fed policy features
 
 **Phase 8 Components Status**: 4/4 Complete ✅
@@ -394,10 +395,10 @@ This document tracks the development progress against the implementation plan. C
 - [x] Forward Guidance Analyzer
 - [x] Enhanced Policy Timeline
 
-**Phase 9 Components Status**: 2/4 Complete
+**Phase 9 Components Status**: 3/4 Complete
 - [x] Interactive Policy Simulator
 - [x] Fed Reaction Function Dashboard
-- [ ] Policy Impact Scorecard
+- [x] Policy Impact Scorecard
 - [ ] Policy Prescription Summary
 
 **Impact**: Tool now provides actionable Fed policy insights including:
@@ -471,7 +472,14 @@ This document tracks the development progress against the implementation plan. C
   - [x] Shows thresholds for easing/tightening signals
   - [x] Integrated into analyze command output
   - [x] Color-coded signals for easy interpretation
-- [ ] **Policy Impact Scorecard**: Response profiles, lag analysis, dual mandate scoring
+- [x] **Policy Impact Scorecard**: Response profiles, lag analysis, dual mandate scoring - **COMPLETED ✅**
+  - [x] Created PolicyImpactScorecard component with comprehensive impact analysis
+  - [x] Implemented response profiles showing effectiveness (HIGH/MODERATE/LOW/ADVERSE)
+  - [x] Built policy transmission lag analysis tracking first response, peak, and stabilization
+  - [x] Created dual mandate scoring system (0-100 for employment and price stability)
+  - [x] Added visual score bars and overall success assessment
+  - [x] Shows policy balance (employment-focused, inflation-focused, balanced, or conflicted)
+  - [x] Integrated into analyze command for best historical match
 - [ ] **Policy Prescription Summary**: Most likely Fed response with alternatives and thresholds
 
 #### Phase 10: Original User Experience Features
