@@ -19,7 +19,10 @@ import AnalogueReportView from './components/AnalogueReportView';
 import CorrelationHeatmap from './components/charts/CorrelationHeatmap';
 import PolicySimulatorSimple from './components/PolicySimulatorSimple';
 import MarketExpectationsDashboard from './components/MarketExpectationsDashboard';
+import MarketExpectationsDashboardV2 from './components/MarketExpectationsDashboardV2';
 import CrossAssetDashboard from './components/CrossAssetDashboard';
+import CrossAssetDashboardV2 from './components/CrossAssetDashboardV2';
+import WelcomeScreen from './components/WelcomeScreen';
 
 interface AppProps {
   command: string;
@@ -41,7 +44,10 @@ const App = ({ command, params, indicators }: AppProps) => {
 
   useEffect(() => {
     const run = async () => {
-      if (command === 'update-data') {
+      if (command === 'welcome' || !command) {
+        setLoading(false);
+        return;
+      } else if (command === 'update-data') {
         try {
           setLoading(true);
           setStatus('Initializing database...');
@@ -330,25 +336,43 @@ const App = ({ command, params, indicators }: AppProps) => {
   }
 
   if (command === 'market-expectations' && !loading && marketAnalysis) {
+    const useV2 = params.v2 !== false; // Default to v2
     return (
       <Box flexDirection="column">
         <StatusMessage message={status} type="success" />
-        <MarketExpectationsDashboard analysis={marketAnalysis} />
+        {useV2 ? (
+          <MarketExpectationsDashboardV2 analysis={marketAnalysis} />
+        ) : (
+          <MarketExpectationsDashboard analysis={marketAnalysis} />
+        )}
       </Box>
     );
   }
 
   if (command === 'cross-asset-analysis' && !loading && crossAssetSummary) {
+    const useV2 = params.v2 !== false; // Default to v2
     return (
       <Box flexDirection="column">
         <StatusMessage message={status} type="success" />
-        <CrossAssetDashboard 
-          analogues={crossAssetAnalogues} 
-          summary={crossAssetSummary} 
-          tradingSignals={crossAssetSignals} 
-        />
+        {useV2 ? (
+          <CrossAssetDashboardV2 
+            analogues={crossAssetAnalogues} 
+            summary={crossAssetSummary} 
+            tradingSignals={crossAssetSignals} 
+          />
+        ) : (
+          <CrossAssetDashboard 
+            analogues={crossAssetAnalogues} 
+            summary={crossAssetSummary} 
+            tradingSignals={crossAssetSignals} 
+          />
+        )}
       </Box>
     );
+  }
+
+  if (command === 'welcome' || !command) {
+    return <WelcomeScreen />;
   }
 
   return <StatusMessage message={status} type="success" />;
@@ -533,7 +557,7 @@ yargs(hideBin(process.argv))
   }, (argv) => {
     render(<App command="cross-asset-analysis" params={argv} indicators={[]} />);
   })
-  .demandCommand(1, 'You need to specify a command: `update-data`, `analyze`, `correlate`, `simulate`, `market-expectations`, `cross-asset-analysis`, or `list-templates`.')
+  .demandCommand(0, 'Available commands: `update-data`, `analyze`, `correlate`, `simulate`, `market-expectations`, `cross-asset-analysis`, or `list-templates`.')
   .help()
   .example('$0 analyze -T stagflation-hunt -m 12', 'Use the stagflation template for analysis.')
   .example('$0 analyze -i UNRATE:0.5 -i CPIAUCSL:0.5 -m 12', 'Analyze with 50/50 weighting on unemployment and inflation.')
@@ -543,3 +567,8 @@ yargs(hideBin(process.argv))
   .example('$0 cross-asset-analysis -T balanced-economic -m 12', 'Analyze cross-asset performance during historical analogues.')
   .example('$0 list-templates', 'Show all available economic analysis templates.')
   .argv;
+
+// If no command was specified, show welcome screen
+if (process.argv.length <= 2) {
+  render(<App command="welcome" params={{}} indicators={[]} />);
+}
