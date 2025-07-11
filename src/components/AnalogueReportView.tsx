@@ -6,6 +6,7 @@ import { FRED_SERIES } from '../constants';
 import { getEconomicEra } from '../services/analysis';
 import SimpleLineChart from './charts/SimpleLineChart';
 import PolicyResponseAnalyzer from './PolicyResponseAnalyzer';
+import PolicyTimeline from './PolicyTimeline';
 
 interface Props {
   analogues: HistoricalAnalogue[];
@@ -55,19 +56,8 @@ const AnalogueReportView: React.FC<Props> = ({ analogues, indicators }) => {
             ))}
           </Box>
 
-          <Box flexDirection="column" marginTop={1} borderTopStyle="round" borderTopColor="gray">
-            <Text bold>Fed Policy Timeline</Text>
-            <Box flexWrap="wrap">
-              {analogue.fedPolicyActions.map((action, i) => (
-                <Text key={i} marginRight={2}>
-                  <Text color={action.action === 'HIKE' ? 'red' : 'green'}>
-                    {action.action === 'HIKE' ? '▲' : '▼'}
-                  </Text>
-                  <Text> {action.date.substring(0, 7)} ({action.changeBps}bps)</Text>
-                </Text>
-              ))}
-            </Box>
-          </Box>
+          {/* Enhanced Policy Timeline - show extended view for best match */}
+          <PolicyTimeline analogue={analogue} showExtended={index === 0} />
 
           {/* Add Policy Response Analysis - show projections for best match */}
           <PolicyResponseAnalyzer analogue={analogue} showProjections={index === 0} />

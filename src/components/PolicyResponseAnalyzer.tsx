@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import { HistoricalAnalogue, FedPolicyAction, EconomicDataPoint } from '../types';
 import { identifyPolicyRegimes, generatePolicyPlaybook, projectFuturePolicy } from '../services/policyAnalysis';
+import { FRED_SERIES } from '../constants';
 
 interface PolicyResponseAnalyzerProps {
   analogue: HistoricalAnalogue;
@@ -233,17 +234,20 @@ const PolicyResponseAnalyzer: React.FC<PolicyResponseAnalyzerProps> = ({ analogu
       {effectiveness.length > 0 && (
         <Box flexDirection="column" marginTop={1}>
           <Text bold underline>Policy Impact</Text>
-          {effectiveness.map((effect, i) => (
-            <Box key={i} marginLeft={2}>
-              <Text>
-                <Text color="gray">{effect.indicator}: </Text>
-                <Text color={effect.change > 0 ? 'red' : 'green'}>
-                  {effect.change > 0 ? '+' : ''}{effect.change.toFixed(2)}
+          {effectiveness.map((effect, i) => {
+            const indicatorName = FRED_SERIES[effect.indicator]?.name || effect.indicator;
+            return (
+              <Box key={i} marginLeft={2}>
+                <Text>
+                  <Text color="gray">{indicatorName}: </Text>
+                  <Text color={effect.change > 0 ? 'red' : 'green'}>
+                    {effect.change > 0 ? '+' : ''}{effect.change.toFixed(2)}
+                  </Text>
+                  <Text color="gray"> ({effect.changePercent > 0 ? '+' : ''}{effect.changePercent.toFixed(1)}%)</Text>
                 </Text>
-                <Text color="gray"> ({effect.changePercent > 0 ? '+' : ''}{effect.changePercent.toFixed(1)}%)</Text>
-              </Text>
-            </Box>
-          ))}
+              </Box>
+            );
+          })}
         </Box>
       )}
 
