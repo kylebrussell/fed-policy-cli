@@ -8,6 +8,7 @@ import { fetchAllEconomicData, fetchFOMCProjections } from './services/api';
 import { initDatabase, insertData, getAllData, initProjectionsTable, insertProjections } from './services/database';
 import { findAnalogues, getLastNMonths, getTargetPeriod } from './services/analysis';
 import { calculateCorrelationMatrix, CorrelationMatrix } from './services/correlation';
+import { analyzeMarketExpectations, MarketExpectationsAnalysis } from './services/marketExpectations';
 import { ScenarioParams, HistoricalAnalogue, WeightedIndicator, EconomicDataPoint } from './types';
 import { FRED_SERIES, ECONOMIC_TEMPLATES } from './constants';
 import LoadingSpinner from './components/Spinner';
@@ -15,6 +16,7 @@ import StatusMessage from './components/StatusMessage';
 import AnalogueReportView from './components/AnalogueReportView';
 import CorrelationHeatmap from './components/charts/CorrelationHeatmap';
 import PolicySimulatorSimple from './components/PolicySimulatorSimple';
+import MarketExpectationsDashboard from './components/MarketExpectationsDashboard';
 
 interface AppProps {
   command: string;
@@ -29,6 +31,7 @@ const App = ({ command, params, indicators }: AppProps) => {
   const [analogues, setAnalogues] = useState<HistoricalAnalogue[]>([]);
   const [correlationMatrix, setCorrelationMatrix] = useState<CorrelationMatrix | null>(null);
   const [currentData, setCurrentData] = useState<EconomicDataPoint[]>([]);
+  const [marketAnalysis, setMarketAnalysis] = useState<MarketExpectationsAnalysis | null>(null);
 
   useEffect(() => {
     const run = async () => {
@@ -174,6 +177,28 @@ const App = ({ command, params, indicators }: AppProps) => {
         } finally {
           setLoading(false);
         }
+      } else if (command === 'market-expectations') {
+        try {
+          setLoading(true);
+          setStatus('Initializing database...');
+          await initDatabase();
+          setStatus('Loading economic data for market analysis...');
+          const allData = await getAllData();
+          
+          if (allData.length === 0) {
+            setError('No economic data found. Run `update-data` first.');
+            return;
+          }
+          
+          setStatus('Analyzing market expectations vs Fed projections...');
+          const analysis = await analyzeMarketExpectations(allData);
+          setMarketAnalysis(analysis);
+          setStatus('Market expectations analysis complete.');
+        } catch (e) {
+          setError(e instanceof Error ? e.message : String(e));
+        } finally {
+          setLoading(false);
+        }
       }
     };
 
@@ -211,6 +236,15 @@ const App = ({ command, params, indicators }: AppProps) => {
       <Box flexDirection="column">
         <StatusMessage message={status} type="success" />
         <PolicySimulatorSimple currentData={currentData} historicalAnalogue={analogues[0]} />
+      </Box>
+    );
+  }
+
+  if (command === 'market-expectations' && !loading && marketAnalysis) {
+    return (
+      <Box flexDirection="column">
+        <StatusMessage message={status} type="success" />
+        <MarketExpectationsDashboard analysis={marketAnalysis} />
       </Box>
     );
   }
@@ -369,11 +403,15 @@ yargs(hideBin(process.argv))
   }, (argv) => {
     render(<App command="simulate" params={argv} indicators={[]} />);
   })
-  .demandCommand(1, 'You need to specify a command: `update-data`, `analyze`, `correlate`, `simulate`, or `list-templates`.')
+  .command('market-expectations', 'Analyze market expectations vs Fed projections for trading insights', () => {}, (argv) => {
+    render(<App command="market-expectations" params={argv} indicators={[]} />);
+  })
+  .demandCommand(1, 'You need to specify a command: `update-data`, `analyze`, `correlate`, `simulate`, `market-expectations`, or `list-templates`.')
   .help()
   .example('$0 analyze -T stagflation-hunt -m 12', 'Use the stagflation template for analysis.')
   .example('$0 analyze -i UNRATE:0.5 -i CPIAUCSL:0.5 -m 12', 'Analyze with 50/50 weighting on unemployment and inflation.')
   .example('$0 correlate -i UNRATE CPIAUCSL GDPC1', 'Calculate the correlation between unemployment, inflation, and GDP growth.')
   .example('$0 simulate -T balanced-economic', 'Launch interactive policy simulator.')
+  .example('$0 market-expectations', 'Analyze yield curve and Fed vs market rate expectations.')
   .example('$0 list-templates', 'Show all available economic analysis templates.')
   .argv;

@@ -14,6 +14,9 @@ export const FRED_SERIES = {
   DGS6MO: { name: '6-Month Treasury', type: 'level', frequency: 'daily' },
   DGS1: { name: '1-Year Treasury', type: 'level', frequency: 'daily' },
   DGS2: { name: '2-Year Treasury', type: 'level', frequency: 'daily' },
+  DGS5: { name: '5-Year Treasury', type: 'level', frequency: 'daily' },
+  DGS10: { name: '10-Year Treasury', type: 'level', frequency: 'daily' },
+  DGS30: { name: '30-Year Treasury', type: 'level', frequency: 'daily' },
 };
 
 // FOMC projection series for Fed dot plot data

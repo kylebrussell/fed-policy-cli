@@ -341,26 +341,26 @@ Following the successful implementation of flexible indicator analysis and compr
 
 These enhancements directly address the core value proposition of understanding Fed policy responses:
 
-1. **Week 1-2**: **Fed Policy Response Analyzer** (`src/components/PolicyResponseAnalyzer.tsx`)
+1: **Fed Policy Response Analyzer** (`src/components/PolicyResponseAnalyzer.tsx`)
    - Implement policy pattern recognition (aggressive/gradual/data-dependent)
    - Calculate response timing lags between triggers and actions
    - Track policy effectiveness on indicators
    - Files: New component `PolicyResponseAnalyzer.tsx`, update `AnalogueReportView.tsx`
 
-2. **Week 3-4**: **Enhanced Policy Timeline Visualization** (`src/components/PolicyTimeline.tsx`)
+2: **Enhanced Policy Timeline Visualization** (`src/components/PolicyTimeline.tsx`)
    - Show 3-6 months pre-decision context
    - Add cumulative impact tracking
    - Auto-label policy regimes (easing/tightening/neutral)
    - Implement FOMC meeting markers
    - Files: New component `PolicyTimeline.tsx`, enhance existing timeline display
 
-3. **Week 5-6**: **Policy Playbook Generator** (`src/services/policyAnalysis.ts`)
+3: **Policy Playbook Generator** (`src/services/policyAnalysis.ts`)
    - Extract Fed response patterns from analogues
    - Generate step-by-step playbooks
    - Identify policy rationale and key concerns
    - Files: New service `policyAnalysis.ts`, update `AnalogueReportView.tsx`
 
-4. **Week 7-8**: **Forward Guidance Analyzer** (`src/components/ForwardGuidance.tsx`)
+4: **Forward Guidance Analyzer** (`src/components/ForwardGuidance.tsx`)
    - Project 6-12 month Fed actions based on precedent
    - Calculate probability distributions
    - Highlight key data dependencies
@@ -368,19 +368,19 @@ These enhancements directly address the core value proposition of understanding 
 
 ### **Phase 9** 🔥 **HIGH PRIORITY** (Interactive Policy Features)
 
-1. **Month 3**: **Interactive Policy Simulator** (`src/components/PolicySimulator.tsx`)
+1: **Interactive Policy Simulator** (`src/components/PolicySimulator.tsx`)
    - What-if scenario modeling
    - Side-by-side policy comparison
    - Real-time projection updates
    - Files: New interactive component using Ink's `useInput` hook
 
-2. **Month 4**: **Fed Reaction Function Dashboard** (`src/components/FedDashboard.tsx`)
+2: **Fed Reaction Function Dashboard** (`src/components/FedDashboard.tsx`)
    - Policy trigger indicators visualization
    - Rate change probability calculator
    - Policy pressure gauge
    - Files: New dashboard component with real-time updates
 
-3. **Month 5**: **Policy Impact Scorecard** (`src/components/PolicyScorecard.tsx`)
+3: **Policy Impact Scorecard** (`src/components/PolicyScorecard.tsx`)
    - Indicator response profiles
    - Lag analysis visualization
    - Dual mandate scoring
@@ -388,16 +388,16 @@ These enhancements directly address the core value proposition of understanding 
 
 ### **Phase 10** 🔧 **CORE ALGORITHM FIXES** (Foundation Improvements)
 
-1. **Month 6**: Fix overlapping period problem and add minimum time gap enforcement
-2. **Month 7**: Resolve chart normalization issues causing flat displays  
-3. **Month 8**: Implement historical diversity scoring for temporal spread
-4. **Month 9**: Add data quality filtering for unreliable early periods
+1: Fix overlapping period problem and add minimum time gap enforcement
+2: Resolve chart normalization issues causing flat displays  
+3: Implement historical diversity scoring for temporal spread
+4: Add data quality filtering for unreliable early periods
 
 ### **Phase 11** ⚡ **USER EXPERIENCE ENHANCEMENTS** (Usability)
 
-1. **Month 10**: Period exclusion controls and historical era focusing
-2. **Month 11**: Economic regime templates for common use cases
-3. **Month 12**: Interactive target period selection capabilities
+1: Period exclusion controls and historical era focusing
+2: Economic regime templates for common use cases
+3: Interactive target period selection capabilities
 
 ### **Phase 12** 💹 **MARKET EXPECTATIONS DASHBOARD** (Trading Integration - v5.0)
 
@@ -405,7 +405,7 @@ These enhancements directly address the core value proposition of understanding 
 
 **Implementation Approach**: Hybrid database design with FRED-only MVP escalating to paid market data.
 
-1. **Month 13-14**: **FRED-Only Market Expectations MVP** (`src/services/marketExpectations.ts`)
+1: **FRED-Only Market Expectations MVP** (`src/services/marketExpectations.ts`)
    - **Database Updates**:
      - Add Treasury yields (DGS3MO, DGS6MO, DGS1, DGS2) to existing economic_data table
      - Create new `fomc_projections` table for dot plot data (FEDTARMD series)
@@ -431,13 +431,13 @@ These enhancements directly address the core value proposition of understanding 
      Yield Curve Signal: Inverted
      ```
 
-2. **Month 15-16**: **Enhanced Analytics & Trading Signals**
+2: **Enhanced Analytics & Trading Signals**
    - Forward rate calculations from Treasury curve
    - Historical divergence analysis (Fed vs Model accuracy)
    - Basic trading signal generation
    - Confidence intervals and probability distributions
 
-3. **Month 17-18**: **Professional Market Data Integration** ($25/month upgrade)
+3: **Professional Market Data Integration** ($25/month upgrade)
    - CME FedWatch API integration for true market probabilities
    - Meeting-by-meeting probability distributions
    - Real-time dislocation scoring
@@ -445,9 +445,9 @@ These enhancements directly address the core value proposition of understanding 
 
 ### **Phase 13** 🌐 **CROSS-ASSET FED PLAYBOOK** (Multi-Asset Trading)
 
-1. **Month 19-20**: Track USD, bonds, equities during historical analogues
-2. **Month 21-22**: Sector rotation analysis and credit spread behavior
-3. **Month 23-24**: Commodity responses and volatility patterns
+1: Track USD, bonds, equities during historical analogues
+2: Sector rotation analysis and credit spread behavior
+3: Commodity responses and volatility patterns
 
 ### **Phase 14** 🚀 **ADVANCED FEATURES** (Future Vision)
 

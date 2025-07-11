@@ -1,9 +1,16 @@
-# Fed Scenario Modeling Utility v4.0
+# Fed Scenario Modeling Utility v5.0
 
 A powerful command-line tool for analyzing the U.S. economy and predicting Federal Reserve policy actions. Find historical periods that are statistically similar to the present and use them to understand likely Fed responses based on historical precedent.
 
-## 🚀 What's New in v4.0
+## 🚀 What's New in v5.0 - Macro Trading Platform
 
+- **🎯 Market Expectations Dashboard**: Analyze Fed dot plot vs market-implied rates from Treasury yield curve
+- **📈 Yield Curve Analysis**: Real-time inversion detection with recession risk warnings  
+- **💰 Trading Signals**: Fed vs market divergence scoring with confidence levels and timeframes
+- **⚡ Live Market Data**: Treasury yields (3M-30Y) integrated with Fed projections for trading insights
+- **🔍 Divergence Detection**: Quantify basis point differences between market expectations and Fed guidance
+
+### Fed Policy Analysis (v4.0)
 - **Fed Reaction Function Dashboard**: Real-time policy trigger analysis with pressure gauge and rate change probabilities
 - **Policy Impact Scorecard**: Dual mandate scoring system with transmission lag analysis
 - **Policy Prescription Summary**: Actionable recommendations with primary path, alternatives, and risk factors
@@ -18,15 +25,25 @@ A powerful command-line tool for analyzing the U.S. economy and predicting Feder
 
 ## 🎯 Core Mission
 
-Transform economic data into actionable Fed policy insights by:
+Transform economic data into actionable macro trading insights by:
 - Finding genuinely diverse historical analogues to current conditions
 - Analyzing how the Fed responded in similar situations
+- Detecting market vs Fed expectations divergence for trading opportunities
+- Providing real-time yield curve analysis with recession risk warnings
 - Projecting likely future Fed actions based on historical patterns
-- Providing policy playbooks with success metrics
+- Delivering trading signals with confidence levels and timeframes
 
 ## ✨ Key Features
 
-### Fed Policy Analysis (NEW v4.0)
+### Market Expectations Analysis (NEW v5.0)
+- **📊 Market Expectations Dashboard**: Compare Fed dot plot projections vs market-implied rates from Treasury yield curve
+- **📈 Yield Curve Analysis**: Real-time display of full yield curve (3M-30Y) with inversion detection and recession warnings
+- **💰 Trading Signal Generation**: Fed vs market divergence scoring with confidence levels, strength indicators, and timeframes
+- **⚡ Live Treasury Data**: Integrated 7-point yield curve (3M, 6M, 1Y, 2Y, 5Y, 10Y, 30Y) updated from FRED API
+- **🔍 Divergence Quantification**: Precise basis point calculations between market expectations and Fed projections
+- **⚠️ Risk Warnings**: Automatic detection of yield curve inversions with recession risk alerts
+
+### Fed Policy Analysis (v4.0)
 - **🎯 Fed Reaction Function Dashboard**: Shows policy triggers, pressure gauge (-100 to +100), and next meeting probabilities
 - **📈 Policy Impact Scorecard**: Dual mandate scoring (employment vs price stability) with transmission lag analysis
 - **📋 Policy Prescription Summary**: Most likely Fed response with alternatives, thresholds, and communication strategy
@@ -65,7 +82,10 @@ npm run dev -- update-data
 # 4. Run your first analysis with Fed policy predictions!
 npm run dev -- analyze --template balanced-economic -m 3
 
-# 5. Or try the interactive policy simulator!
+# 5. Or check market expectations vs Fed projections!
+npm run dev -- market-expectations
+
+# 6. Or try the interactive policy simulator!
 npm run dev -- simulate
 ```
 
@@ -146,7 +166,44 @@ npm run dev -- analyze --template balanced-economic --exclude-recent-years 10
 npm run dev -- analyze -i UNRATE:1.0 --focus-era stagflation --focus-era volcker
 ```
 
-### 5. Interactive Policy Simulator
+### 5. Market Expectations Analysis
+
+Analyze where market expectations diverge from Fed projections using yield curve and dot plot data.
+
+**Example:** Get real-time market vs Fed analysis.
+```bash
+npm run dev -- market-expectations
+```
+
+This shows:
+- **Current Yield Curve**: Full 3M-30Y curve with inversion warnings
+- **Fed Projections**: Latest FOMC dot plot median and ranges
+- **Market Divergence**: Basis point differences with directional bias
+- **Trading Signals**: Confidence-scored opportunities with timeframes
+- **Risk Warnings**: Recession risk alerts from yield curve inversions
+
+**Example output:**
+```
+📊 MARKET EXPECTATIONS DASHBOARD
+
+Current Yield Curve
+3M: 4.42%   6M: 4.31%   1Y: 4.07%   2Y: 3.86%
+2Y-10Y Spread: -4bp | 3M-10Y Spread: -4bp
+⚠️  YIELD CURVE INVERTED - RECESSION RISK
+
+Market vs Fed Divergence
+Market Implied Rate: 3.86%
+Fed Projection: 3.40%
+Divergence: +46bp
+Market expects HIGHER rates than Fed
+
+🎯 TRADING SIGNALS
+YIELD CURVE PLAY - MODERATE (7.72% confidence)
+  Yield curve inverted (-4bp). Consider recession protection trades.
+  Timeframe: 6-18 months
+```
+
+### 6. Interactive Policy Simulator
 
 Explore what-if scenarios by modeling different Fed policy paths and their projected economic impacts.
 
@@ -301,6 +358,10 @@ Lists all available scenario templates with descriptions and indicator weights.
 Fetches the latest economic data from the FRED API.
 - `--api-key`: Your FRED API key (if not in `.env`).
 
+### `market-expectations`
+Analyze market expectations vs Fed projections for trading insights.
+- No additional arguments required - uses latest available data.
+
 ### `simulate`
 Launch an interactive policy simulator to explore what-if scenarios.
 - `-T, --template`: Economic template to use for baseline (default: `balanced-economic`).
@@ -330,6 +391,13 @@ Launch an interactive policy simulator to explore what-if scenarios.
 | `GDPC1`    | Real GDP Growth             | YoY % | Quarterly |
 | `T10Y2Y`   | 10-2 Year Treasury Spread   | Level | Daily → Monthly |
 | `ICSA`     | Initial Jobless Claims      | Level | Weekly → Monthly |
+| `DGS3MO`   | 3-Month Treasury Yield      | Level | Daily → Monthly |
+| `DGS6MO`   | 6-Month Treasury Yield      | Level | Daily → Monthly |
+| `DGS1`     | 1-Year Treasury Yield       | Level | Daily → Monthly |
+| `DGS2`     | 2-Year Treasury Yield       | Level | Daily → Monthly |
+| `DGS5`     | 5-Year Treasury Yield       | Level | Daily → Monthly |
+| `DGS10`    | 10-Year Treasury Yield      | Level | Daily → Monthly |
+| `DGS30`    | 30-Year Treasury Yield      | Level | Daily → Monthly |
 
 ## Economic Eras
 
