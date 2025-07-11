@@ -1,28 +1,39 @@
 # Product Requirements Document: Fed Scenario Modeling Utility
 
 **Author:** Gemini
-**Date:** July 10, 2025
-**Version:** 4.0
+**Date:** July 11, 2025
+**Version:** 5.1
 
 ## 1. Introduction & Problem Statement
 
-In a complex economic environment, investors, researchers, and policy enthusiasts need a way to contextualize current conditions and anticipate potential future actions by the U.S. Federal Reserve. The interplay of key indicators like unemployment, inflation, and the Federal Funds Rate is the primary driver of monetary policy. However, new external factors, such as the recently implemented tariffs of 2025, add layers of complexity that make historical comparisons difficult.
+In a complex economic environment, institutional investors, macro traders, and policy professionals need sophisticated tools to contextualize current conditions and generate actionable trading recommendations based on Federal Reserve policy cycles. The interplay of key indicators like unemployment, inflation, and the Federal Funds Rate drives both monetary policy and market movements across asset classes.
 
-This document outlines the requirements for a local, command-line utility for macOS that empowers a user to analyze historical economic data, identify periods analogous to the present, and use those analogues to model potential future Fed actions. The initial driving use case is to understand how the Fed might act in the summer and fall of 2025 given steady unemployment (~4.1%), modest inflation, and new tariffs.
+This document outlines the requirements for a professional-grade, command-line utility that empowers users to analyze historical economic data, identify periods analogous to the present, model potential Fed actions, and generate institutional-quality trading recommendations with specific entry/exit levels, position sizing, and risk management.
+
+The evolved use case is to transform Fed policy analysis into actionable trading intelligence with quantified risk management for professional macro trading strategies.
 
 ## 2. Goals & Objectives
 
-* **Primary Goal:** To provide a user with a data-driven framework for understanding and simulating Federal Reserve monetary policy decisions.
+* **Primary Goal:** To provide institutional-grade trading intelligence that transforms Fed policy analysis into actionable investment recommendations with quantified risk management.
 * **Objectives:**
-  * To aggregate and store a flexible, expandable set of key historical economic data locally.
-  * To provide an interactive command-line interface (CLI) for defining complex, weighted economic scenarios.
-  * To implement a powerful analysis engine that uses similarity algorithms to identify and rank historical periods analogous to a user-defined scenario.
-  * To generate detailed, visually-rich, and dynamic reports within the CLI that compare scenarios and outline Fed actions.
-  * To clearly present the Federal Reserve's actions (changes in the Fed Funds Rate) during those historical analogues.
+  * To aggregate and store comprehensive economic and market data locally for professional analysis.
+  * To provide sophisticated CLI interfaces for complex economic scenario modeling and trading strategy development.
+  * To implement advanced analysis engines using similarity algorithms, scenario analysis, and backtesting frameworks.
+  * To generate professional trading recommendations with specific entry/exit levels, position sizing, and hedging strategies.
+  * To deliver comprehensive risk management including Value-at-Risk, stress testing, and portfolio optimization.
+  * To provide institutional-quality performance attribution and backtesting capabilities.
 
 ## 3. Target Audience
 
-The primary user is a sophisticated individual on a macOS system, such as a retail investor, a student of economics, a financial journalist, or a policy enthusiast, who is comfortable working in a terminal environment.
+The primary users are sophisticated financial professionals including:
+* **Macro Traders** - Portfolio managers and traders executing Fed-driven strategies
+* **Hedge Fund Analysts** - Research professionals developing institutional trading strategies  
+* **Investment Banks** - Fixed income and rates trading desks
+* **Asset Managers** - Multi-asset portfolio managers positioning around Fed cycles
+* **Economic Researchers** - Policy analysts requiring actionable market intelligence
+* **Risk Managers** - Professionals needing quantified Fed policy risk assessment
+
+All users are expected to be comfortable with terminal environments and sophisticated financial concepts.
 
 ## 4. Core Features
 
@@ -191,10 +202,39 @@ These enhancements directly address the primary goal of understanding and simula
 * **Critical Thresholds**: Specific indicator levels that would trigger action
 * **Risk Assessment**: Factors that could make current situation unique
 
-### 7.7. **PRODUCT INTELLIGENCE** *(Future Vision - Advanced Research Platform)*
+### 7.7. **INSTITUTIONAL TRADING INTELLIGENCE** *(Critical Priority - Professional Trading Platform)*
+
+#### 7.7.1. **Trading Recommendation Engine** *(COMPLETED v5.1)*
+* **Specific Entry/Exit Levels**: Technical analysis with support/resistance and volatility-based pricing
+* **Risk-Adjusted Position Sizing**: Kelly Criterion, volatility-adjusted, and risk parity methodologies  
+* **Comprehensive Hedging Strategies**: Duration, curve, volatility, and cross-asset hedge recommendations
+* **Monte Carlo P&L Analysis**: 1000+ simulation scenarios with Value-at-Risk calculations
+* **Professional Trading Dashboard**: Institutional-grade UI with trade cards, portfolio summary, and risk metrics
+
+#### 7.7.2. **Advanced Risk Management** *(COMPLETED v5.1)*
+* **Position Sizing Framework**: Multiple methodologies (Kelly, volatility-adjusted, risk parity, correlation-adjusted)
+* **Portfolio Risk Budgeting**: Sector concentration limits, maximum drawdown constraints, correlation adjustments
+* **Scenario Analysis Service**: Monte Carlo simulation, stress testing, regime-specific correlations
+* **Hedging Service**: Systematic hedge generation for duration, curve, volatility, and cross-asset risks
+* **Backtesting Framework**: Historical performance validation with Sharpe ratios, win rates, regime analysis
+
+#### 7.7.3. **Market Integration Platform** *(COMPLETED v5.0)*
+* **Market Expectations Dashboard**: Fed dot plot vs market-implied rates with divergence analysis
+* **Cross-Asset Fed Playbook**: Multi-asset performance tracking across historical Fed cycles
+* **Yield Curve Analysis**: Real-time inversion detection with recession risk warnings
+* **Trading Signal Generation**: Risk-adjusted BUY/SELL/HOLD signals with confidence scoring
+* **ETF Performance Analytics**: Historical performance patterns during analogous Fed periods
+
+#### 7.7.4. **Future Professional Features** *(Roadmap)*
+* **Real-time Market Data**: Live pricing integration for institutional-grade execution
+* **Portfolio Management**: Multi-strategy portfolio construction and optimization
+* **Execution Analytics**: Transaction cost analysis and market impact modeling
+* **Client Reporting**: Institutional-quality performance and attribution reporting
+* **API Integration**: Systematic trading system connectivity
+
+### 7.8. **PRODUCT INTELLIGENCE** *(Future Vision - Advanced Research Platform)*
 * **Scenario Forecasting**: Extend historical analogues to project potential future economic paths
-* **Monte Carlo Policy Simulation**: Statistical modeling of Fed policy decision trees
+* **Advanced ML Integration**: Deep learning pattern recognition for policy predictions
 * **Real-time Alert System**: Notify when current conditions match historically significant periods
 * **Economic Research Integration**: Connect with academic datasets and policy research databases
-* **Machine Learning Integration**: Use ML to improve pattern recognition and policy predictions
 * **Natural Language Query Interface**: Allow researchers to ask questions in plain English
