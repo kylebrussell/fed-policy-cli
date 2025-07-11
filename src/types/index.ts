@@ -52,6 +52,7 @@ export interface HistoricalAnalogue {
     reliability: 'high' | 'medium' | 'low';
     warnings: string[];
   };
+  volatilityContext?: VolatilityContext; // Optional FOMC volatility analysis
 }
 
 export interface FedPolicyAction {
@@ -185,4 +186,131 @@ export interface TradeResult {
   return: number;
   duration: number; // days
   fedEventContext?: string;
+}
+
+// FOMC Volatility Analysis Types
+export interface VolatilityContext {
+  fomcEvents: FOMCEvent[];
+  volatilityProfile: VolatilityProfile;
+  optionsFlow: OptionsFlow;
+  reactionPatterns: FOMCReactionPattern[];
+}
+
+export interface FOMCEvent {
+  date: string;
+  type: 'STATEMENT' | 'PRESS_CONFERENCE' | 'MINUTES' | 'SPEECH';
+  rateChange?: number; // Basis points
+  surpriseFactor: number; // -1 to 1 scale
+  marketReaction: MarketReaction;
+}
+
+export interface MarketReaction {
+  immediateVolSpike: number; // Percentage
+  peakVolTime: string; // Minutes after announcement
+  volDecayHalfLife: number; // Hours for vol to decay 50%
+  priceMove: {
+    spy: number;
+    tlt: number;
+    vix: number;
+    move: number;
+  };
+}
+
+export interface VolatilityProfile {
+  preEventIV: VolatilitySurface;
+  postEventIV: VolatilitySurface;
+  historicalAverage: number;
+  currentLevel: number;
+  fomcPremium: number; // Extra vol priced in before FOMC
+}
+
+export interface VolatilitySurface {
+  asset: string;
+  timestamp: string;
+  tenors: VolatilityTenor[];
+  skew: VolatilitySkew;
+}
+
+export interface VolatilityTenor {
+  expiration: string; // Days to expiration
+  impliedVol: number;
+  volume: number;
+  openInterest: number;
+}
+
+export interface VolatilitySkew {
+  putCallRatio: number;
+  skewSlope: number; // Put skew vs call skew
+  term90d25Delta: number; // 90-day 25-delta put skew
+}
+
+export interface OptionsFlow {
+  putCallRatio: number;
+  unusualActivity: UnusualOptionsActivity[];
+  dealerPositioning: DealerPositioning;
+  largePositions: LargePosition[];
+}
+
+export interface UnusualOptionsActivity {
+  asset: string;
+  strike: number;
+  expiration: string;
+  type: 'CALL' | 'PUT';
+  volume: number;
+  openInterest: number;
+  impliedVol: number;
+  significance: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface DealerPositioning {
+  totalGamma: number;
+  gammaFlipLevel: number; // Price level where dealer gamma flips
+  hedgingPressure: 'BUYING' | 'SELLING' | 'NEUTRAL';
+  estimatedFlow: number; // Expected hedging flow in millions
+}
+
+export interface LargePosition {
+  asset: string;
+  strike: number;
+  expiration: string;
+  type: 'CALL' | 'PUT';
+  openInterest: number;
+  estimatedNotional: number;
+  significance: string;
+}
+
+export interface FOMCReactionPattern {
+  patternType: 'IMMEDIATE_SPIKE' | 'DELAYED_REACTION' | 'REVERSAL' | 'SUSTAINED_MOVE';
+  timeframe: string; // e.g., '30min', '2hours', '1day'
+  frequency: number; // How often this pattern occurs (0-1)
+  avgMagnitude: number; // Average size of move
+  successRate: number; // Historical success rate
+  tradingImplication: string;
+}
+
+// Vol-Adjusted Trading Recommendation
+export interface VolAdjustedRecommendation extends TradingRecommendation {
+  volatilityContext: {
+    currentIV: number;
+    historicalAverage: number;
+    fomcPremium: number;
+    decayRate: number;
+    nextFOMC: string;
+    daysToFOMC: number;
+  };
+  optionsStrategy?: {
+    strategy: 'STRADDLE' | 'STRANGLE' | 'VOL_PLAY' | 'HEDGE' | 'CALENDAR' | 'BUTTERFLY';
+    strikes: number[];
+    expiration: string;
+    expectedVolMove: number;
+    breakEvenMoves: { upper: number; lower: number };
+    cost: number;
+    maxProfit: number;
+    maxLoss: number;
+  };
+  volTiming: {
+    entryWindow: string; // When to enter relative to FOMC
+    exitWindow: string; // When to exit relative to FOMC
+    reasoning: string;
+  };
 }
