@@ -32,7 +32,6 @@ docs/
 progress.md
 
 # Development scripts
-build.mjs
 tsconfig.json
 
 # Lock files (users should generate their own)
