@@ -9,6 +9,7 @@ A powerful command-line tool for analyzing the U.S. economy and predicting Feder
 - **Response Timing Analysis**: Shows how long the Fed typically waits before acting on economic triggers
 - **Policy Playbooks**: Extracts typical Fed response sequences with historical success rates
 - **Future Projections**: Projects likely Fed actions for the next 6 months based on historical patterns
+- **Interactive Policy Simulator**: What-if scenario modeling to explore different Fed policy paths
 - **Enhanced Visualizations**: Improved charts showing meaningful economic variations instead of flat lines
 - **Temporal Diversity**: Results now span decades of history, not just recent years
 
@@ -28,6 +29,7 @@ Transform economic data into actionable Fed policy insights by:
 - **📈 Policy Effectiveness Tracking**: Measures how indicators responded to Fed interventions
 - **📋 Policy Playbook Generator**: Extracts typical Fed response sequences with success rates
 - **🔮 Future Projections**: Projects likely Fed actions for the next 6 months based on historical patterns
+- **🎮 Interactive Policy Simulator**: Explore what-if scenarios with different Fed policy paths
 
 ### Intelligent Historical Analysis
 - **Temporal Diversity**: Algorithm ensures results span multiple economic eras, not just recent periods
@@ -135,6 +137,26 @@ npm run dev -- analyze --template balanced-economic --exclude-recent-years 10
 npm run dev -- analyze -i UNRATE:1.0 --focus-era stagflation --focus-era volcker
 ```
 
+### 5. Interactive Policy Simulator
+
+Explore what-if scenarios by modeling different Fed policy paths and their projected economic impacts.
+
+**Example:** Launch the policy simulator with balanced economic indicators.
+```bash
+npm run dev -- simulate
+```
+
+**Example:** Use a specific template for simulation baseline.
+```bash
+npm run dev -- simulate --template inflation-regime
+```
+
+The simulator shows:
+- Current economic conditions
+- Multiple policy scenarios (no change, gradual/aggressive easing/tightening)
+- 6-month projections for unemployment, inflation, and GDP
+- Color-coded visualization for easy interpretation
+
 ## Example Output
 
 When you run an analysis, you'll see comprehensive results including:
@@ -196,6 +218,11 @@ Lists all available scenario templates with descriptions and indicator weights.
 ### `update-data`
 Fetches the latest economic data from the FRED API.
 - `--api-key`: Your FRED API key (if not in `.env`).
+
+### `simulate`
+Launch an interactive policy simulator to explore what-if scenarios.
+- `-T, --template`: Economic template to use for baseline (default: `balanced-economic`).
+- `-m, --months`: Number of recent months for current scenario (default: 12).
 
 ## Available Templates
 
