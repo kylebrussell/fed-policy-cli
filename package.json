@@ -1,6 +1,6 @@
 {
   "name": "fed-policy-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Macro trading intelligence from Fed policy analysis. Transform economic data into actionable trading insights by analyzing historical Fed policy analogues.",
   "main": "bin/fed-policy-cli.mjs",
   "bin": {
