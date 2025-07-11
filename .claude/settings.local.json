@@ -15,7 +15,10 @@
       "Bash(npx tsx:*)",
       "Bash(npx tsc:*)",
       "Bash(npx ts-node:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(chmod:*)",
+      "Bash(fed-policy-cli)",
+      "Bash(fed-policy-cli market-expectations:*)"
     ],
     "deny": []
   }

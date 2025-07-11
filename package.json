@@ -1,20 +1,41 @@
 {
-  "name": "fed-scenario-cli",
+  "name": "fed-policy-cli",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Macro trading intelligence from Fed policy analysis. Transform economic data into actionable trading insights by analyzing historical Fed policy analogues.",
+  "main": "bin/fed-policy-cli.mjs",
   "bin": {
-    "fed-analyzer": "./dist/cli.js"
+    "fed-policy-cli": "./bin/fed-policy-cli.mjs"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "node build.mjs",
     "start": "npm run build && node dist/cli.js",
     "dev": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' src/cli.tsx",
-    "test": "jest"
+    "test": "jest",
+    "link": "npm run build && npm link",
+    "postinstall": "npm run build"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "fed",
+    "federal-reserve",
+    "macro",
+    "trading",
+    "economics",
+    "yield-curve",
+    "policy",
+    "analysis",
+    "cli",
+    "finance"
+  ],
+  "author": "Kyle Russell",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kylebrussell/fed-policy-cli.git"
+  },
+  "homepage": "https://github.com/kylebrussell/fed-policy-cli#readme",
+  "bugs": {
+    "url": "https://github.com/kylebrussell/fed-policy-cli/issues"
+  },
   "type": "module",
   "dependencies": {
     "asciichart": "^1.5.25",
@@ -25,6 +46,7 @@
     "node-fetch": "^3.3.2",
     "react": "^19.1.0",
     "sqlite3": "^5.1.7",
+    "tsx": "^4.20.3",
     "yargs": "^18.0.0"
   },
   "devDependencies": {
@@ -32,6 +54,7 @@
     "@types/node": "^24.0.12",
     "@types/react": "^19.1.8",
     "@types/yargs": "^17.0.33",
+    "esbuild": "^0.25.6",
     "jest": "^30.0.4",
     "nodemon": "^3.1.10",
     "ts-jest": "^29.4.0",

@@ -1,0 +1,40 @@
+# Development files
+*.log
+npm-debug.log*
+.DS_Store
+.env
+.env.local
+.env.*.local
+
+# Test files
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Build artifacts
+dist/
+build/
+coverage/
+
+# Development directories
+.vscode/
+.idea/
+node_modules/
+
+# Git
+.git/
+.gitignore
+
+# Documentation drafts
+docs/
+progress.md
+
+# Development scripts
+build.mjs
+tsconfig.json
+
+# Lock files (users should generate their own)
+package-lock.json
+yarn.lock

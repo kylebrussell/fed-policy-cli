@@ -39,7 +39,7 @@ const WelcomeScreen: React.FC = () => {
                 <Text color="gray"> - {tip.description}</Text>
               </Box>
               <Box marginLeft={4}>
-                <Text color="green">$ npm run dev -- {tip.command}</Text>
+                <Text color="green">$ fed-policy-cli {tip.command}</Text>
               </Box>
             </Box>
           </Box>
@@ -48,13 +48,13 @@ const WelcomeScreen: React.FC = () => {
       
       <Box marginTop={2}>
         <Text color="gray">
-          💡 First time? Run <Text color="yellow">npm run dev -- update-data</Text> to fetch latest economic data
+          💡 First time? Run <Text color="yellow">fed-policy-cli update-data</Text> to fetch latest economic data
         </Text>
       </Box>
       
       <Box marginTop={1}>
         <Text color="gray">
-          📚 Documentation: <Text color="cyan">npm run dev -- help</Text> | List templates: <Text color="cyan">npm run dev -- list-templates</Text>
+          📚 Documentation: <Text color="cyan">fed-policy-cli help</Text> | List templates: <Text color="cyan">fed-policy-cli list-templates</Text>
         </Text>
       </Box>
     </Box>
