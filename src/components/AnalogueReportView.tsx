@@ -1,26 +1,33 @@
 
 import React from 'react';
 import { Box, Text } from 'ink';
-import { HistoricalAnalogue, WeightedIndicator } from '../types';
+import { HistoricalAnalogue, WeightedIndicator, EconomicDataPoint } from '../types';
 import { FRED_SERIES } from '../constants';
 import { getEconomicEra } from '../services/analysis';
 import SimpleLineChart from './charts/SimpleLineChart';
 import PolicyResponseAnalyzer from './PolicyResponseAnalyzer';
 import PolicyTimeline from './PolicyTimeline';
+import FedReactionDashboard from './FedReactionDashboard';
 
 interface Props {
   analogues: HistoricalAnalogue[];
   indicators: WeightedIndicator[];
+  currentData?: EconomicDataPoint[];
 }
 
-const AnalogueReportView: React.FC<Props> = ({ analogues, indicators }) => {
+const AnalogueReportView: React.FC<Props> = ({ analogues, indicators, currentData }) => {
   if (!analogues || analogues.length === 0) {
     return <Text color="yellow">No historical analogues found for the given scenario.</Text>;
   }
 
   return (
     <Box flexDirection="column">
-      <Text bold color="cyan">📊 Top {analogues.length} Historical Analogues</Text>
+      {/* Show Fed Reaction Dashboard if we have current data */}
+      {currentData && currentData.length > 0 && (
+        <FedReactionDashboard currentData={currentData} />
+      )}
+      
+      <Text bold color="cyan" marginTop={1}>📊 Top {analogues.length} Historical Analogues</Text>
       {analogues.map((analogue, index) => (
         <Box
           key={index}

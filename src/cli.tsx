@@ -96,6 +96,7 @@ const App = ({ command, params, indicators }: AppProps) => {
 
           const results = findAnalogues(allData, targetScenario, scenarioParams, params.top as number);
           setAnalogues(results);
+          setCurrentData(targetScenario);
           setStatus('Analysis complete.');
         } catch (e) {
           setError(e instanceof Error ? e.message : String(e));
@@ -174,7 +175,7 @@ const App = ({ command, params, indicators }: AppProps) => {
     return (
       <Box flexDirection="column">
         <StatusMessage message={status} type="success" />
-        <AnalogueReportView analogues={analogues} indicators={indicators} />
+        <AnalogueReportView analogues={analogues} indicators={indicators} currentData={currentData} />
       </Box>
     );
   }
