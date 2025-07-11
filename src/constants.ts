@@ -19,6 +19,31 @@ export const FRED_SERIES = {
   DGS30: { name: '30-Year Treasury', type: 'level', frequency: 'daily' },
 };
 
+// Cross-Asset Series for Fed Policy Analysis
+// Commodities, currencies, and alternative assets that respond to Fed policy
+export const CROSS_ASSET_SERIES = {
+  // Commodities
+  DCOILWTICO: { name: 'WTI Crude Oil', type: 'level', frequency: 'daily' },
+  POILBREUSDM: { name: 'Brent Crude Oil', type: 'level', frequency: 'monthly' },
+  PALLFNFINDEXQ: { name: 'Global Commodity Index', type: 'level', frequency: 'quarterly' },
+  PNRGINDEXM: { name: 'Global Energy Price Index', type: 'level', frequency: 'monthly' },
+  
+  // Gold and Precious Metals
+  PCU2122212122210: { name: 'Gold Price Index (Producer)', type: 'level', frequency: 'monthly' },
+  IQ12260: { name: 'Gold Export Price Index', type: 'level', frequency: 'monthly' },
+  WPU10210501: { name: 'Gold Ore Producer Price Index', type: 'level', frequency: 'monthly' },
+  
+  // Currency and Dollar Strength
+  DTWEXBGS: { name: 'Broad USD Index', type: 'level', frequency: 'daily' },
+  RBUSBIS: { name: 'Real Broad USD Exchange Rate', type: 'level', frequency: 'monthly' },
+  DTWEXAFEGS: { name: 'Advanced Economies USD Index', type: 'level', frequency: 'daily' },
+  
+  // Additional Commodities
+  PCOPPUSDM: { name: 'Copper Price', type: 'level', frequency: 'monthly' },
+  PWHEAMTUSDM: { name: 'Wheat Price', type: 'level', frequency: 'monthly' },
+  PALUMUSDM: { name: 'Aluminum Price', type: 'level', frequency: 'monthly' },
+};
+
 // FOMC projection series for Fed dot plot data
 export const FOMC_PROJECTION_SERIES = {
   FEDTARMD: { name: 'Fed Funds Rate Projection - Median', type: 'projection' },

@@ -1,8 +1,9 @@
 // /src/services/api.ts
 import fetch from 'node-fetch';
-import { FRED_API_URL, getFredApiKey, FRED_SERIES, FOMC_PROJECTION_SERIES } from '../constants';
+import { FRED_API_URL, getFredApiKey, FRED_SERIES, FOMC_PROJECTION_SERIES, CROSS_ASSET_SERIES } from '../constants';
 import { EconomicDataPoint } from '../types';
-import { FOMCProjection } from './database';
+import { FOMCProjection, CrossAssetDataPoint } from './database';
+import { fetchAllETFData, getAlphaVantageApiKey } from './etfDataService';
 
 interface FredObservation {
   date: string;
@@ -22,8 +23,10 @@ const fetchSeriesData = async (seriesId: string, apiKey: string): Promise<FredOb
 const transformData = (
   seriesId: string,
   observations: FredObservation[],
+  seriesSource: 'FRED' | 'CROSS_ASSET' = 'FRED'
 ): { [date: string]: number } => {
-  const { type } = FRED_SERIES[seriesId];
+  const seriesInfo = seriesSource === 'FRED' ? FRED_SERIES[seriesId] : CROSS_ASSET_SERIES[seriesId];
+  const { type } = seriesInfo;
   const transformed: { [date: string]: number } = {};
 
   const numericObservations = observations
@@ -191,4 +194,92 @@ export const fetchFOMCProjections = async (apiKey?: string): Promise<FOMCProject
   });
   
   return projections;
+};
+
+// Fetch cross-asset data (commodities, currencies, gold) from FRED
+export const fetchAllCrossAssetData = async (apiKey?: string): Promise<CrossAssetDataPoint[]> => {
+  const fredApiKey = getFredApiKey(apiKey);
+  const allSeriesData: { [seriesId: string]: { [date: string]: number } } = {};
+
+  // 1. Fetch and transform all cross-asset series data in parallel
+  const seriesIds = Object.keys(CROSS_ASSET_SERIES);
+  console.log(`Fetching ${seriesIds.length} cross-asset series from FRED...`);
+  
+  const fetchPromises = seriesIds.map(async (id) => {
+    try {
+      console.log(`Fetching ${id}: ${CROSS_ASSET_SERIES[id].name}`);
+      const observations = await fetchSeriesData(id, fredApiKey);
+      allSeriesData[id] = transformData(id, observations, 'CROSS_ASSET');
+    } catch (error) {
+      console.warn(`Warning: Could not fetch cross-asset series ${id}: ${error.message}`);
+      allSeriesData[id] = {};
+    }
+  });
+  await Promise.all(fetchPromises);
+
+  // 2. Create a master set of all dates
+  const allDates = new Set<string>();
+  seriesIds.forEach(id => {
+    Object.keys(allSeriesData[id]).forEach(date => allDates.add(date));
+  });
+  const sortedDates = Array.from(allDates).sort();
+
+  // 3. Upsample all series to a daily frequency by forward-filling
+  const finalData: CrossAssetDataPoint[] = [];
+  const lastValues: { [seriesId: string]: number | null } = {};
+  seriesIds.forEach(id => (lastValues[id] = null));
+
+  for (const date of sortedDates) {
+    const dataPoint: CrossAssetDataPoint = { date };
+    for (const id of seriesIds) {
+      if (allSeriesData[id][date] != null) {
+        lastValues[id] = allSeriesData[id][date];
+      }
+      if (lastValues[id] !== null) {
+        dataPoint[id] = lastValues[id];
+      }
+    }
+    finalData.push(dataPoint);
+  }
+
+  console.log(`Processed ${finalData.length} cross-asset data points`);
+  return finalData;
+};
+
+// Combined function to fetch both ETF and cross-asset data
+export const fetchAllCrossAssetAndETFData = async (
+  fredApiKey?: string, 
+  alphaVantageApiKey?: string
+): Promise<{
+  crossAssetData: CrossAssetDataPoint[];
+  etfData: any[];
+  etfFundamentals: any[];
+}> => {
+  console.log('Starting comprehensive cross-asset data fetch...');
+  
+  // Fetch cross-asset FRED data
+  const crossAssetData = await fetchAllCrossAssetData(fredApiKey);
+  
+  // Fetch ETF data if Alpha Vantage key is provided
+  let etfData: any[] = [];
+  let etfFundamentals: any[] = [];
+  
+  if (alphaVantageApiKey) {
+    try {
+      console.log('Fetching ETF data from Alpha Vantage...');
+      const etfResult = await fetchAllETFData(alphaVantageApiKey);
+      etfData = etfResult.historicalData;
+      etfFundamentals = etfResult.fundamentals;
+    } catch (error) {
+      console.warn('Warning: Could not fetch ETF data from Alpha Vantage:', error.message);
+    }
+  } else {
+    console.log('No Alpha Vantage API key provided, skipping ETF data fetch');
+  }
+  
+  return {
+    crossAssetData,
+    etfData,
+    etfFundamentals
+  };
 };

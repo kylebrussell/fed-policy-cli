@@ -1,16 +1,23 @@
-# Fed Scenario Modeling Utility v5.0
+# Fed Scenario Modeling Utility v5.1
 
 A powerful command-line tool for analyzing the U.S. economy and predicting Federal Reserve policy actions. Find historical periods that are statistically similar to the present and use them to understand likely Fed responses based on historical precedent.
 
-## 🚀 What's New in v5.0 - Macro Trading Platform
+## 🚀 What's New in v5.1 - Cross-Asset Fed Playbook
 
+- **📊 Cross-Asset Fed Playbook**: Multi-asset performance analysis during Fed policy analogues across bonds, equities, commodities, and currencies
+- **🎯 Trading Signal Generation**: Risk-adjusted buy/sell/hold signals with confidence scoring and expected returns
+- **💰 Asset Class Rotation**: Sector rotation indicators showing which asset classes to favor during Fed cycles
+- **📈 Free Data Integration**: FRED commodities/currencies + Alpha Vantage ETF data (TLT, SPY, XLF, HYG, etc.)
+- **⚡ Performance Analytics**: Sharpe ratios, volatility, max drawdown analysis for systematic positioning
+
+### Market Expectations Analysis (v5.0)
 - **🎯 Market Expectations Dashboard**: Analyze Fed dot plot vs market-implied rates from Treasury yield curve
 - **📈 Yield Curve Analysis**: Real-time inversion detection with recession risk warnings  
 - **💰 Trading Signals**: Fed vs market divergence scoring with confidence levels and timeframes
 - **⚡ Live Market Data**: Treasury yields (3M-30Y) integrated with Fed projections for trading insights
 - **🔍 Divergence Detection**: Quantify basis point differences between market expectations and Fed guidance
 
-### Fed Policy Analysis (v4.0)
+### Fed Policy Analysis 
 - **Fed Reaction Function Dashboard**: Real-time policy trigger analysis with pressure gauge and rate change probabilities
 - **Policy Impact Scorecard**: Dual mandate scoring system with transmission lag analysis
 - **Policy Prescription Summary**: Actionable recommendations with primary path, alternatives, and risk factors
@@ -30,12 +37,21 @@ Transform economic data into actionable macro trading insights by:
 - Analyzing how the Fed responded in similar situations
 - Detecting market vs Fed expectations divergence for trading opportunities
 - Providing real-time yield curve analysis with recession risk warnings
+- Analyzing cross-asset performance during Fed policy cycles (bonds, equities, commodities, currencies)
+- Generating systematic trading signals across asset classes with confidence levels
 - Projecting likely future Fed actions based on historical patterns
-- Delivering trading signals with confidence levels and timeframes
 
 ## ✨ Key Features
 
-### Market Expectations Analysis (NEW v5.0)
+### Cross-Asset Fed Playbook (NEW v5.1)
+- **📊 Multi-Asset Performance Analysis**: Analyze how bonds (TLT), equities (SPY, XLF), commodities (oil, gold), and currencies (USD) performed during historical Fed policy analogues
+- **🎯 Cross-Asset Trading Signals**: Risk-adjusted buy/sell/hold signals with confidence scoring, expected returns, and timeframes
+- **💰 Sector Rotation Indicators**: Systematic signals showing which asset classes and sectors to favor during Fed cycles
+- **📈 Performance Analytics**: Sharpe ratios, volatility, max drawdown analysis for comprehensive risk assessment
+- **⚡ Free Data Integration**: FRED commodities/currencies + Alpha Vantage ETF data (500 free calls/day)
+- **🔄 Asset Class Correlation**: Analysis of how different assets respond to Fed policy changes during historical analogues
+
+### Market Expectations Analysis (v5.0)
 - **📊 Market Expectations Dashboard**: Compare Fed dot plot projections vs market-implied rates from Treasury yield curve
 - **📈 Yield Curve Analysis**: Real-time display of full yield curve (3M-30Y) with inversion detection and recession warnings
 - **💰 Trading Signal Generation**: Fed vs market divergence scoring with confidence levels, strength indicators, and timeframes
@@ -43,7 +59,7 @@ Transform economic data into actionable macro trading insights by:
 - **🔍 Divergence Quantification**: Precise basis point calculations between market expectations and Fed projections
 - **⚠️ Risk Warnings**: Automatic detection of yield curve inversions with recession risk alerts
 
-### Fed Policy Analysis (v4.0)
+### Fed Policy Analysis
 - **🎯 Fed Reaction Function Dashboard**: Shows policy triggers, pressure gauge (-100 to +100), and next meeting probabilities
 - **📈 Policy Impact Scorecard**: Dual mandate scoring (employment vs price stability) with transmission lag analysis
 - **📋 Policy Prescription Summary**: Most likely Fed response with alternatives, thresholds, and communication strategy
@@ -85,7 +101,10 @@ npm run dev -- analyze --template balanced-economic -m 3
 # 5. Or check market expectations vs Fed projections!
 npm run dev -- market-expectations
 
-# 6. Or try the interactive policy simulator!
+# 6. Or analyze cross-asset performance during Fed cycles!
+npm run dev -- cross-asset-analysis
+
+# 7. Or try the interactive policy simulator!
 npm run dev -- simulate
 ```
 
@@ -203,7 +222,55 @@ YIELD CURVE PLAY - MODERATE (7.72% confidence)
   Timeframe: 6-18 months
 ```
 
-### 6. Interactive Policy Simulator
+### 6. Cross-Asset Fed Playbook Analysis
+
+Analyze how different asset classes (bonds, equities, commodities, currencies) performed during historical Fed policy analogues.
+
+**Example:** Analyze cross-asset performance using balanced economic indicators.
+```bash
+npm run dev -- cross-asset-analysis
+```
+
+**Example:** Use a specific template and timeframe.
+```bash
+npm run dev -- cross-asset-analysis --template stagflation-hunt --months 18 --top 3
+```
+
+This shows:
+- **Asset Class Performance**: How bonds (TLT), equities (SPY, XLF), commodities (oil, gold), and currencies (USD) performed during similar Fed cycles
+- **Sector Rotation Signals**: Which asset classes and sectors to favor or avoid
+- **Performance Analytics**: Sharpe ratios, volatility, max drawdown for each asset
+- **Trading Signals**: Risk-adjusted buy/sell/hold recommendations with confidence levels
+- **Commodity Trends**: Rising and falling commodity patterns during Fed cycles
+- **Currency Strength**: USD direction and magnitude during policy changes
+
+**Example output:**
+```
+📊 CROSS-ASSET FED PLAYBOOK
+Analysis Period: 1985-01 to 1985-03 | 3 Historical Analogues
+
+Asset Class Performance During Historical Analogues
+Bonds                     +12.4%    (2 assets)
+Commodities              +8.7%     (5 assets)
+Equities                 +2.1%     (3 assets)
+Currency                 -1.2%     (3 assets)
+
+🚀 Best Performers
+TLT: 20+ Year Treasury    Bonds        +15.2%    Sharpe: 1.23
+DCOILWTICO: WTI Crude     Commodities  +12.8%    Sharpe: 0.89
+
+🎯 CROSS-ASSET TRADING SIGNALS
+BUY TLT - Bonds | Expected: +15.2%
+  Strong historical performance: 15.2% avg return, Sharpe ratio 1.23
+  Confidence: ████████░░ 85%
+  Timeframe: 12 months (based on 3 historical periods)
+
+SELL XLF - Equities | Expected: -3.4%
+  Poor historical performance: -3.4% avg return, negative risk-adjusted returns
+  Confidence: ███████░░░ 73%
+```
+
+### 7. Interactive Policy Simulator
 
 Explore what-if scenarios by modeling different Fed policy paths and their projected economic impacts.
 
@@ -355,12 +422,19 @@ The main command for running an analysis.
 Lists all available scenario templates with descriptions and indicator weights.
 
 ### `update-data`
-Fetches the latest economic data from the FRED API.
+Fetches the latest economic data from FRED and optionally ETF data.
 - `--api-key`: Your FRED API key (if not in `.env`).
+- `--alpha-vantage-key`: Alpha Vantage API key for ETF data (optional).
 
 ### `market-expectations`
 Analyze market expectations vs Fed projections for trading insights.
 - No additional arguments required - uses latest available data.
+
+### `cross-asset-analysis`
+Analyze how different asset classes perform during Fed policy analogues.
+- `-T, --template`: Economic template to use for finding analogues (default: `balanced-economic`).
+- `-m, --months`: Number of recent months for current scenario (default: 12).
+- `-t, --top`: Number of top analogues to analyze (default: 5).
 
 ### `simulate`
 Launch an interactive policy simulator to explore what-if scenarios.
@@ -382,6 +456,7 @@ Launch an interactive policy simulator to explore what-if scenarios.
 
 ## Supported Indicators
 
+### Economic Indicators (FRED)
 | ID       | Description                 | Type | Frequency |
 | :------- | :-------------------------- | ---- | --------- |
 | `UNRATE`   | Unemployment Rate           | Level | Monthly |
@@ -398,6 +473,30 @@ Launch an interactive policy simulator to explore what-if scenarios.
 | `DGS5`     | 5-Year Treasury Yield       | Level | Daily → Monthly |
 | `DGS10`    | 10-Year Treasury Yield      | Level | Daily → Monthly |
 | `DGS30`    | 30-Year Treasury Yield      | Level | Daily → Monthly |
+
+### Cross-Asset Indicators (FRED)
+| ID       | Description                 | Type | Frequency |
+| :------- | :-------------------------- | ---- | --------- |
+| `DCOILWTICO` | WTI Crude Oil Price       | Level | Daily → Monthly |
+| `POILBREUSDM` | Brent Crude Oil Price    | Level | Monthly |
+| `PALLFNFINDEXQ` | Global Commodity Index | Level | Quarterly |
+| `PNRGINDEXM` | Global Energy Price Index | Level | Monthly |
+| `PCU2122212122210` | Gold Price Index     | Level | Monthly |
+| `DTWEXBGS` | Broad USD Index            | Level | Daily → Monthly |
+| `RBUSBIS`  | Real Broad USD Exchange Rate | Level | Monthly |
+| `PCOPPUSDM` | Copper Price              | Level | Monthly |
+
+### ETF Data (Alpha Vantage)
+| Symbol   | Description                 | Asset Class | Data Source |
+| :------- | :-------------------------- | ----------- | ----------- |
+| `TLT`    | 20+ Year Treasury Bond ETF  | Bonds       | Alpha Vantage |
+| `SPY`    | S&P 500 ETF                | Equities    | Alpha Vantage |
+| `XLF`    | Financial Sector ETF       | Equities    | Alpha Vantage |
+| `HYG`    | High Yield Corporate Bond ETF | Credit    | Alpha Vantage |
+| `LQD`    | Investment Grade Corporate Bond ETF | Credit | Alpha Vantage |
+| `GLD`    | Gold ETF                   | Commodities | Alpha Vantage |
+| `XLE`    | Energy Sector ETF          | Equities    | Alpha Vantage |
+| `IWM`    | Russell 2000 ETF           | Equities    | Alpha Vantage |
 
 ## Economic Eras
 
