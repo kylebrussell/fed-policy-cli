@@ -1,3 +1,19 @@
+```
+███████╗███████╗██████╗     ██████╗  ██████╗ ██╗     ██╗ ██████╗██╗   ██╗
+██╔════╝██╔════╝██╔══██╗    ██╔══██╗██╔═══██╗██║     ██║██╔════╝╚██╗ ██╔╝
+█████╗  █████╗  ██║  ██║    ██████╔╝██║   ██║██║     ██║██║      ╚████╔╝
+██╔══╝  ██╔══╝  ██║  ██║    ██╔═══╝ ██║   ██║██║     ██║██║       ╚██╔╝
+██║     ███████╗██████╔╝    ██║     ╚██████╔╝███████╗██║╚██████╗   ██║
+╚═╝     ╚══════╝╚═════╝     ╚═╝      ╚═════╝ ╚══════╝╚═╝ ╚═════╝   ╚═╝
+
+████████╗██████╗  █████╗ ██████╗ ███████╗██████╗
+╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗
+   ██║   ██████╔╝███████║██║  ██║█████╗  ██████╔╝
+   ██║   ██╔══██╗██╔══██║██║  ██║██╔══╝  ██╔══██╗
+   ██║   ██║  ██║██║  ██║██████╔╝███████╗██║  ██║
+   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝
+```
+
 # Fed Policy CLI
 
 > Macro trading intelligence from Fed policy analysis
@@ -14,6 +30,12 @@ Transform economic data into actionable trading insights by analyzing historical
 
 ## Installation
 
+### Option 1: Run directly with npx (recommended)
+```bash
+npx fed-policy-cli
+```
+
+### Option 2: Install globally
 ```bash
 npm install -g fed-policy-cli
 ```
@@ -22,19 +44,19 @@ npm install -g fed-policy-cli
 
 ```bash
 # Show welcome screen and commands
-fed-policy-cli
+npx fed-policy-cli
 
 # Fetch latest economic data (required first step)
-fed-policy-cli update-data --api-key YOUR_FRED_API_KEY
+npx fed-policy-cli update-data --api-key YOUR_FRED_API_KEY
 
 # Analyze current market conditions
-fed-policy-cli analyze --template balanced-economic
+npx fed-policy-cli analyze --template balanced-economic
 
 # Market expectations analysis
-fed-policy-cli market-expectations
+npx fed-policy-cli market-expectations
 
 # Cross-asset analysis during Fed cycles
-fed-policy-cli cross-asset-analysis
+npx fed-policy-cli cross-asset-analysis
 ```
 
 ## API Keys Required
@@ -64,16 +86,16 @@ ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key_here
 ### Examples
 ```bash
 # Stagflation analysis
-fed-policy-cli analyze --template stagflation-hunt --months 12
+npx fed-policy-cli analyze --template stagflation-hunt --months 12
 
 # Custom indicator analysis
-fed-policy-cli analyze --indicator UNRATE:0.5 --indicator CPIAUCSL:0.5
+npx fed-policy-cli analyze --indicator UNRATE:0.5 --indicator CPIAUCSL:0.5
 
 # Correlation analysis
-fed-policy-cli correlate --indicators UNRATE CPIAUCSL GDPC1
+npx fed-policy-cli correlate --indicators UNRATE CPIAUCSL GDPC1
 
 # Cross-asset analysis with Alpha Vantage data
-fed-policy-cli cross-asset-analysis --alpha-vantage-key YOUR_KEY
+npx fed-policy-cli cross-asset-analysis --alpha-vantage-key YOUR_KEY
 ```
 
 ## Data Sources
@@ -127,25 +149,88 @@ fed-policy-cli cross-asset-analysis --alpha-vantage-key YOUR_KEY
 
 ## Example Output
 
+### Welcome Screen
+```bash
+$ npx fed-policy-cli
 ```
- ═══════════════ MARKET EXPECTATIONS ANALYSIS ═══════════════
 
- ════════════════════ EXECUTIVE SUMMARY ═════════════════════
- 🎯 Market positioning 46bp hawkish vs Fed guidance
+```
+███████╗███████╗██████╗     ██████╗  ██████╗ ██╗     ██╗ ██████╗██╗   ██╗
+██╔════╝██╔════╝██╔══██╗    ██╔══██╗██╔═══██╗██║     ██║██╔════╝╚██╗ ██╔╝
+█████╗  █████╗  ██║  ██║    ██████╔╝██║   ██║██║     ██║██║      ╚████╔╝
+██╔══╝  ██╔══╝  ██║  ██║    ██╔═══╝ ██║   ██║██║     ██║██║       ╚██╔╝
+██║     ███████╗██████╔╝    ██║     ╚██████╔╝███████╗██║╚██████╗   ██║
+╚═╝     ╚══════╝╚═════╝     ╚═╝      ╚═════╝ ╚══════╝╚═╝ ╚═════╝   ╚═╝
 
- Key Takeaways:
-   • Significant hawkish divergence creates trading opportunity
-   • Yield curve inversion signals recession risk (-4bp 2s10s)
-   • Fed targets 3.40% by 2027
+████████╗██████╗  █████╗ ██████╗ ███████╗██████╗
+╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗
+   ██║   ██████╔╝███████║██║  ██║█████╗  ██████╔╝
+   ██║   ██╔══██╗██╔══██║██║  ██║██╔══╝  ██╔══██╗
+   ██║   ██║  ██║██║  ██║██████╔╝███████╗██║  ██║
+   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝  v1.0.2
 
- ──── Yield Curve Snapshot ────
- 3M: 4.42%   2Y: 3.86%   10Y: 4.35%   30Y: 4.86%
- 2s10s: +0.49bp ⚠️ INVERTED
+ Macro Trading Intelligence from Fed Policy Analysis
 
- ──── Trading Signals ────
- 1. YIELD CURVE PLAY
-    Yield curve inverted. Consider recession protection trades.
-    Confidence: ████░░░░░░ 45%
+ Transform economic data into actionable trading insights by analyzing
+ historical Fed policy analogues
+
+ Quick Start Commands:
+
+ 📊  Analyze Current Conditions - Find historical Fed policy analogues
+         $ npx fed-policy-cli analyze --template balanced-economic
+
+ 💹  Market vs Fed Expectations - Yield curve & divergence analysis
+         $ npx fed-policy-cli market-expectations
+
+ 🌍  Cross-Asset Playbook - Multi-asset Fed cycle positioning
+         $ npx fed-policy-cli cross-asset-analysis
+
+ 🎮  Policy Simulator - What-if Fed scenario modeling
+         $ npx fed-policy-cli simulate
+
+ 💡 First time? Run npx fed-policy-cli update-data to fetch latest economic data
+```
+
+### Market Expectations Analysis
+```bash
+$ npx fed-policy-cli market-expectations
+```
+
+```
+═══════════════ MARKET EXPECTATIONS ANALYSIS ═══════════════
+
+════════════════════ EXECUTIVE SUMMARY ═════════════════════
+
+🎯 Market positioning 46bp hawkish vs Fed guidance
+
+Key Takeaways:
+  • Significant hawkish divergence creates trading opportunity
+  • Yield curve inversion signals recession risk (0.49bp 2s10s)
+  • Fed targets 3.40% by 2027
+
+Timeframe: Next 6-18 months
+Confidence: ░░░░░░░░░░ 1%
+════════════════════════════════════════════════════════════
+
+──── Yield Curve Snapshot ────
+
+3M: 4.42%   2Y: 3.86%   10Y: 4.35%   30Y: 4.86%
+
+2s10s: +0.49bp ⚠️ INVERTED
+
+──── Market vs Fed Divergence ────
+
+Market Rate: 3.86% | Fed Target: 3.40%
+
+📈 +46bp HAWKISH BIAS
+
+──── Trading Signals ────
+
+1. YIELD CURVE PLAY
+   Yield curve inverted (0bp). Consider recession protection trades.
+   Confidence: ░░░░░░░░ 1%
+
+Last updated: 2025-07-10 | Data: FRED Treasury yields + FOMC dot plot projections
 ```
 
 ## License
@@ -155,4 +240,4 @@ MIT
 ## Support
 
 - GitHub Issues: [fed-policy-cli/issues](https://github.com/kylebrussell/fed-policy-cli/issues)
-- Documentation: Run `fed-policy-cli help`
+- Documentation: Run `npx fed-policy-cli help`
