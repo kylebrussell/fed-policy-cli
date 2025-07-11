@@ -1,9 +1,12 @@
-# Fed Scenario Modeling Utility
+# Fed Scenario Modeling Utility v4.0
 
 A powerful command-line tool for analyzing the U.S. economy and predicting Federal Reserve policy actions. Find historical periods that are statistically similar to the present and use them to understand likely Fed responses based on historical precedent.
 
 ## 🚀 What's New in v4.0
 
+- **Fed Reaction Function Dashboard**: Real-time policy trigger analysis with pressure gauge and rate change probabilities
+- **Policy Impact Scorecard**: Dual mandate scoring system with transmission lag analysis
+- **Policy Prescription Summary**: Actionable recommendations with primary path, alternatives, and risk factors
 - **Fed Policy Response Analyzer**: Comprehensive analysis of how the Fed responded in similar historical situations
 - **Policy Pattern Recognition**: Automatically identifies aggressive vs gradual easing/tightening cycles
 - **Response Timing Analysis**: Shows how long the Fed typically waits before acting on economic triggers
@@ -24,6 +27,9 @@ Transform economic data into actionable Fed policy insights by:
 ## ✨ Key Features
 
 ### Fed Policy Analysis (NEW v4.0)
+- **🎯 Fed Reaction Function Dashboard**: Shows policy triggers, pressure gauge (-100 to +100), and next meeting probabilities
+- **📈 Policy Impact Scorecard**: Dual mandate scoring (employment vs price stability) with transmission lag analysis
+- **📋 Policy Prescription Summary**: Most likely Fed response with alternatives, thresholds, and communication strategy
 - **📊 Policy Response Analyzer**: Automatically categorizes Fed response patterns (aggressive easing, gradual tightening, data-dependent)
 - **⏱️ Response Timing Analysis**: Calculates lag between economic triggers and Fed actions
 - **📈 Policy Effectiveness Tracking**: Measures how indicators responded to Fed interventions
@@ -56,8 +62,11 @@ cp .env.example .env
 # 3. Download latest economic data
 npm run dev -- update-data
 
-# 4. Run your first analysis!
-npm run dev -- analyze --template stagflation-hunt -t 3
+# 4. Run your first analysis with Fed policy predictions!
+npm run dev -- analyze --template balanced-economic -m 3
+
+# 5. Or try the interactive policy simulator!
+npm run dev -- simulate
 ```
 
 ## Installation
@@ -152,50 +161,123 @@ npm run dev -- simulate --template inflation-regime
 ```
 
 The simulator shows:
-- Current economic conditions
-- Multiple policy scenarios (no change, gradual/aggressive easing/tightening)
-- 6-month projections for unemployment, inflation, and GDP
-- Color-coded visualization for easy interpretation
+- Current economic conditions from live data
+- Historical best match for context
+- Four policy scenarios with 6-month projections:
+  - No Change: Continue current policy stance
+  - Gradual Easing: 25bp cuts at measured pace
+  - Aggressive Easing: 50bp cuts to support growth
+  - Gradual Tightening: 25bp hikes to control inflation
+- Color-coded projections for unemployment, inflation, and GDP
+- Confidence levels and historical precedent warnings
+
+**Example simulator output:**
+```
+🎮 Fed Policy Simulator: What-If Scenarios
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Current Economic Conditions (Latest Data)
+• Unemployment: 4.1%
+• Inflation: 2.4%
+• GDP Growth: 2.0%
+• Fed Funds: 4.3%
+
+Best Historical Match: 1985-01 (Volcker Era)
+
+Policy Scenarios (6-Month Projections)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. No Change (Hold at 4.33%)
+   → Unemployment: 4.1% → 4.2%
+   → Inflation: 2.4% → 2.3%
+   → GDP Growth: 2.0% → 1.9%
+
+2. Gradual Easing (-75bps total)
+   → Unemployment: 4.1% → 3.9% ✓
+   → Inflation: 2.4% → 2.5%
+   → GDP Growth: 2.0% → 2.3% ✓
+```
 
 ## Example Output
 
 When you run an analysis, you'll see comprehensive results including:
 
 ```
-📊 Top Historical Analogues
+🎯 Fed Reaction Function Dashboard
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Policy Trigger Indicators
 
-#1: 1984-10 to 1985-09                    Score: 1.3661
+Unemployment Rate: 4.10 → NEUTRAL
+  Thresholds: 4.5 | 4 | 3.5
+
+CPI Inflation: 2.38 → NEUTRAL
+  Thresholds: 1.5 | 2 | 3
+
+GDP Growth: 1.99 → NEUTRAL
+  Thresholds: 1 | 2 | 3
+
+Policy Pressure Gauge
+Easing ◆◆◆◆◆◈◆◆◆◆◆ Tightening
+        Pressure: -4
+
+Next Meeting Probabilities
+HOLD         70%    Balanced risks favor patience
+-25bps       15%    Insurance against downside risks  
++25bps       15%    Preemptive inflation control
+
+📊 Top Historical Analogues
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#1: 1985-01 to 1985-03                    Score: 0.2342
 Volcker Anti-Inflation (1979-1986)
 
 [Economic indicator charts...]
 
 📊 Fed Policy Response Analysis
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Policy Pattern
-Type: Aggressive easing cycle
-Total Adjustment: -367 bps over 6 moves
-Average per Move: -61 bps
-
-Response Timing
-Trigger: Inflation crossed 3.0
-First Action Lag: 11 months
-Full Response Time: 9 months
+Type: Fed maintained steady policy
+Total Adjustment: 0 bps over 0 moves
 
 Policy Playbook
 Key Triggers:
 • Elevated inflation (>3%)
 • Rising unemployment (>5%)
 
-Typical Sequence:
-1. Emergency easing response (-383bps over 3 months)
-2. Cautious rate normalization (+62bps over 2 months)
-
-Historical Success Rate: 90%
+Historical Success Rate: 50%
 
 If Fed Follows This Playbook (Next 6 Months)
-2025-08: HOLD - 60% likely
-2025-09: CUT (-25bps) - 75% likely
-2025-10: CUT (-25bps) - 70% likely
+2025-08: HOLD - 50% likely
+2025-09: HOLD - 50% likely
+2025-10: HOLD - 50% likely
+
+📈 Policy Impact Scorecard
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Dual Mandate Performance
+Employment Score:      █████░░░░░ 50/100
+Price Stability Score: █████░░░░░ 50/100
+Overall Score:         █████░░░░░ 50/100 ✗
+
+Policy Balance: BALANCED
+
+📋 Policy Prescription Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Most Likely Policy Path
+  Maintain current policy stance (70%)
+  Timeframe: Next 2-3 meetings
+  
+  Decision Thresholds:
+  • CPI Inflation > 2.5
+  • Unemployment Rate < 4.5
+
+Alternative Scenarios
+  Precautionary 25bp cut (20%)
+  Condition: If downside risks materialize
+
+Risk Factors
+⚠ Labor market softening could accelerate
+
+Communication Strategy
+• Balance dual mandate considerations
+• Emphasize meeting-by-meeting approach
+• Avoid strong forward guidance
 ```
 
 ## Commands and Arguments

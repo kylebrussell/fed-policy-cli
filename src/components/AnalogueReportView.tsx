@@ -9,6 +9,7 @@ import PolicyResponseAnalyzer from './PolicyResponseAnalyzer';
 import PolicyTimeline from './PolicyTimeline';
 import FedReactionDashboard from './FedReactionDashboard';
 import PolicyImpactScorecard from './PolicyImpactScorecard';
+import PolicyPrescriptionSummary from './PolicyPrescriptionSummary';
 
 interface Props {
   analogues: HistoricalAnalogue[];
@@ -73,6 +74,11 @@ const AnalogueReportView: React.FC<Props> = ({ analogues, indicators, currentDat
           {/* Add Policy Impact Scorecard - show only for best match */}
           {index === 0 && (
             <PolicyImpactScorecard analogue={analogue} currentData={currentData} />
+          )}
+          
+          {/* Add Policy Prescription Summary - show only for best match */}
+          {index === 0 && (
+            <PolicyPrescriptionSummary analogue={analogue} currentData={currentData} />
           )}
         </Box>
       ))}

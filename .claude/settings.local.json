@@ -12,7 +12,9 @@
       "Bash(npm test:*)",
       "WebFetch(domain:github.com)",
       "Bash(npm run start:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx ts-node:*)"
     ],
     "deny": []
   }

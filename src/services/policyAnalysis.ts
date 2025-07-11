@@ -267,3 +267,93 @@ function calculatePolicySuccess(analogue: HistoricalAnalogue): number {
 
   return Math.min(100, Math.max(0, score));
 }
+
+/**
+ * Generate forward guidance projections based on historical patterns
+ */
+export function generateForwardGuidance(analogue: HistoricalAnalogue): PolicyProjection[] {
+  const projections: PolicyProjection[] = [];
+  const actions = analogue.fedPolicyActions || [];
+  const data = analogue.data;
+  
+  if (data.length === 0) return projections;
+  
+  // Get latest economic conditions
+  const latestData = data[data.length - 1];
+  const inflation = latestData.CPIAUCSL as number || 2.5;
+  const unemployment = latestData.UNRATE as number || 4.0;
+  const gdpGrowth = latestData.GDPC1 as number || 2.0;
+  
+  // Identify current regime
+  const regimes = identifyPolicyRegimes(actions);
+  const currentRegime = regimes[regimes.length - 1];
+  
+  // Project next 6 months based on historical patterns and current conditions
+  const months = ['Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6'];
+  
+  for (let i = 0; i < months.length; i++) {
+    let action: PolicyProjection['action'] = 'HOLD';
+    let probability = 50;
+    let basisPoints = 0;
+    let rationale = 'Data-dependent approach';
+    
+    // Determine likely action based on conditions
+    if (inflation > 3.5 && unemployment < 4.5) {
+      // Inflationary pressure
+      if (i < 2) {
+        action = 'HIKE';
+        basisPoints = 25;
+        probability = 60 + (inflation - 3.5) * 20;
+        rationale = 'Persistent inflation requires continued tightening';
+      } else {
+        action = 'HOLD';
+        probability = 70;
+        rationale = 'Assessing cumulative impact of rate hikes';
+      }
+    } else if (unemployment > 4.5 && inflation < 3.0) {
+      // Economic weakness
+      if (i < 3) {
+        action = 'CUT';
+        basisPoints = 25;
+        probability = 55 + (unemployment - 4.5) * 20;
+        rationale = 'Labor market softening warrants easing';
+      } else {
+        action = 'HOLD';
+        probability = 60;
+        rationale = 'Monitoring policy transmission';
+      }
+    } else if (gdpGrowth < 1.0) {
+      // Growth concerns
+      action = 'CUT';
+      basisPoints = 25;
+      probability = 65;
+      rationale = 'Preemptive easing to support growth';
+    } else {
+      // Balanced conditions
+      action = 'HOLD';
+      probability = 75;
+      rationale = 'Economic conditions near equilibrium';
+    }
+    
+    // Adjust based on historical pattern
+    if (currentRegime && i < 3) {
+      if (currentRegime.type === 'easing' && action !== 'HIKE') {
+        probability += 10;
+        rationale += '; continuing easing cycle';
+      } else if (currentRegime.type === 'tightening' && action !== 'CUT') {
+        probability += 10;
+        rationale += '; maintaining restrictive stance';
+      }
+    }
+    
+    projections.push({
+      month: months[i],
+      action,
+      probability: Math.min(90, Math.max(10, probability)),
+      basisPoints: action === 'HOLD' ? undefined : basisPoints,
+      rationale
+    });
+  }
+  
+  return projections;
+}
