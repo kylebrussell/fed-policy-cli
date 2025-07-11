@@ -14,6 +14,7 @@ import LoadingSpinner from './components/Spinner';
 import StatusMessage from './components/StatusMessage';
 import AnalogueReportView from './components/AnalogueReportView';
 import CorrelationHeatmap from './components/charts/CorrelationHeatmap';
+import PolicySimulatorSimple from './components/PolicySimulatorSimple';
 
 interface AppProps {
   command: string;
@@ -27,6 +28,7 @@ const App = ({ command, params, indicators }: AppProps) => {
   const [error, setError] = useState<string | null>(null);
   const [analogues, setAnalogues] = useState<HistoricalAnalogue[]>([]);
   const [correlationMatrix, setCorrelationMatrix] = useState<CorrelationMatrix | null>(null);
+  const [currentData, setCurrentData] = useState<EconomicDataPoint[]>([]);
 
   useEffect(() => {
     const run = async () => {
@@ -116,6 +118,44 @@ const App = ({ command, params, indicators }: AppProps) => {
         } finally {
           setLoading(false);
         }
+      } else if (command === 'simulate') {
+        try {
+          setLoading(true);
+          setStatus('Initializing database...');
+          await initDatabase();
+          setStatus('Loading economic data...');
+          const allData = await getAllData();
+          
+          // Get template
+          const templateId = params.template as string || 'balanced-economic';
+          const template = ECONOMIC_TEMPLATES[templateId];
+          if (!template) {
+            throw new Error(`Unknown template: ${templateId}`);
+          }
+          
+          // Get current data and find best analogue
+          const recentData = getLastNMonths(allData, params.months as number);
+          setCurrentData(recentData);
+          
+          const scenarioParams: ScenarioParams = {
+            indicators: template.indicators,
+            windowMonths: recentData.length,
+            excludeUnreliableData: true
+          };
+          
+          const results = findAnalogues(allData, recentData, scenarioParams, 1);
+          if (results.length === 0) {
+            setError('No historical analogues found to base simulations on.');
+            return;
+          }
+          
+          setAnalogues(results);
+          setStatus('Policy simulator ready.');
+        } catch (e) {
+          setError(e instanceof Error ? e.message : String(e));
+        } finally {
+          setLoading(false);
+        }
       }
     };
 
@@ -144,6 +184,15 @@ const App = ({ command, params, indicators }: AppProps) => {
       <Box flexDirection="column">
         <StatusMessage message={status} type="success" />
         <CorrelationHeatmap matrix={correlationMatrix} />
+      </Box>
+    );
+  }
+
+  if (command === 'simulate' && !loading && analogues.length > 0) {
+    return (
+      <Box flexDirection="column">
+        <StatusMessage message={status} type="success" />
+        <PolicySimulatorSimple currentData={currentData} historicalAnalogue={analogues[0]} />
       </Box>
     );
   }
@@ -285,10 +334,28 @@ yargs(hideBin(process.argv))
   }, (argv) => {
     render(<App command="correlate" params={argv} indicators={[]} />);
   })
-  .demandCommand(1, 'You need to specify a command: `update-data`, `analyze`, `correlate`, or `list-templates`.')
+  .command('simulate', 'Interactive Fed policy simulator for what-if scenarios', (yargs) => {
+    return yargs
+      .option('template', {
+        describe: 'Economic template to use for baseline (default: balanced-economic)',
+        type: 'string',
+        alias: 'T',
+        default: 'balanced-economic'
+      })
+      .option('months', {
+        describe: 'Number of recent months for current scenario',
+        type: 'number',
+        default: 12,
+        alias: 'm'
+      });
+  }, (argv) => {
+    render(<App command="simulate" params={argv} indicators={[]} />);
+  })
+  .demandCommand(1, 'You need to specify a command: `update-data`, `analyze`, `correlate`, `simulate`, or `list-templates`.')
   .help()
   .example('$0 analyze -T stagflation-hunt -m 12', 'Use the stagflation template for analysis.')
   .example('$0 analyze -i UNRATE:0.5 -i CPIAUCSL:0.5 -m 12', 'Analyze with 50/50 weighting on unemployment and inflation.')
   .example('$0 correlate -i UNRATE CPIAUCSL GDPC1', 'Calculate the correlation between unemployment, inflation, and GDP growth.')
+  .example('$0 simulate -T balanced-economic', 'Launch interactive policy simulator.')
   .example('$0 list-templates', 'Show all available economic analysis templates.')
   .argv;
