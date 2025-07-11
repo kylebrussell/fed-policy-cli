@@ -375,7 +375,13 @@ This document tracks the development progress against the implementation plan. C
 - ✅ **Historical Diversity**: Results span multiple economic eras, not just recent periods - **DONE**
 - ✅ **Data Quality Assurance**: Filter unreliable early periods and impossible policy moves - **DONE**
 
-### Current Status (v4.0-IN PROGRESS - Fed Policy Analysis Platform) 🚀
+### Current Status (v5.0-IN PROGRESS - Macro Trading Platform Integration) 🚀
+
+**Major v5.0 Market Integration Progress:**
+- ✅ **Database Foundation**: Successfully integrated Treasury yields (DGS3MO, DGS6MO, DGS1, DGS2) and FOMC projections
+- ✅ **Data Pipeline**: 26,021 economic data points + 228 FOMC projections with automated schema migration
+- ✅ **FRED API Expansion**: Extended from 7 to 11 series with Fed dot plot integration
+- 🎯 **Next**: Build Market Expectations Service and Dashboard Component
 
 **Major v4.0 Achievements (Completed):**
 - ✅ **Fed Policy Response Analyzer Component**: Full implementation with pattern recognition, timing analysis, and effectiveness tracking
@@ -431,11 +437,15 @@ This document tracks the development progress against the implementation plan. C
 - ✅ **Economic Regime Templates COMPLETED**: 8 pre-built templates with economic rationale and CLI integration
 - 🎯 **Next Priority**: Phase 9.3 Interactive Target Period Selection for flexible historical comparisons
 
-### Target for v4.0 (Fed Policy Analysis Enhancements) - **IN PROGRESS** 🚀
+### Target for v4.0 (Fed Policy Analysis Enhancements) - **COMPLETED** ✅
 
 **Core Mission**: Transform the tool from historical comparison utility into a true Fed policy simulation and prediction platform.
 
-#### Phase 8 (NEW): Fed Policy Analysis Components - **IMMEDIATE PRIORITY**
+### Target for v5.0 (Macro Trading Platform) - **PLANNED** 🎯
+
+**Core Mission**: Transform from Fed policy analysis tool into professional macro trading platform with market integration.
+
+#### Phase 8: Fed Policy Analysis Components - **COMPLETED** ✅
 - [x] **Fed Policy Response Analyzer**: Pattern recognition, timing analysis, effectiveness tracking - **COMPLETED ✅**
   - [x] Created PolicyResponseAnalyzer component with comprehensive analysis
   - [x] Implemented policy pattern recognition (aggressive/gradual/data-dependent)
@@ -460,7 +470,7 @@ This document tracks the development progress against the implementation plan. C
   - [x] Included FOMC meeting markers for complete timeline
   - [x] Integrated with AnalogueReportView replacing basic timeline
 
-#### Phase 9 (NEW): Interactive Policy Features
+#### Phase 9: Interactive Policy Features - **COMPLETED** ✅
 - [x] **Interactive Policy Simulator**: What-if scenarios with real-time projections - **COMPLETED ✅**
   - [x] Created PolicySimulatorSimple component with what-if scenarios
   - [x] Added simulate command to CLI with template support
@@ -495,7 +505,73 @@ This document tracks the development progress against the implementation plan. C
   - [x] Shows historical context with cut/hike counts from analogue period
   - [x] Integrated into analyze command for best historical match
 
-#### Phase 10: Original User Experience Features
+#### Phase 10: Macro Trading Platform Integration (v5.0 - Professional Trading Features)
+
+**Core Mission**: Transform from Fed policy analysis tool into professional macro trading platform with market integration.
+
+**Implementation Approach**: Hybrid database design with FRED-only MVP escalating to paid market data.
+
+**Market Integration Components**:
+- [ ] **Market Expectations Dashboard - FRED MVP**: Fed dot plot vs model predictions using free data
+  - [x] **Database Updates**: Add Treasury yields to existing table, create new fomc_projections table - **COMPLETED ✅**
+    - [x] Update constants.ts with TREASURY_SERIES (DGS3MO, DGS6MO, DGS1, DGS2) and FOMC_PROJECTION_SERIES
+    - [x] Update database.ts with initProjectionsTable() for FOMC dot plot data and schema migration logic
+    - [x] Update api.ts to fetch FEDTARMD, FEDTARRM, FEDTARRL, FEDTARRH series with fetchFOMCProjections()
+    - [x] Update cli.tsx update-data command to handle new data sources
+    - [x] **Testing Results**: Successfully added 4 Treasury yield columns, fetched 228 FOMC projections, 26,021 economic data rows
+    - [x] **Data Verification**: Treasury yields (5.4% 3M rate), Fed projections (3.4-3.6% median for 2026-2027)
+  - [ ] **Market Expectations Service**: New marketExpectations.ts service
+    - [ ] Fetch and store FOMC projections (median, high, low) for 2025-2027
+    - [ ] Calculate rough implied rates from Treasury yield curve
+    - [ ] Compare model predictions vs Fed dot plot
+    - [ ] Basic divergence scoring between Fed and model
+  - [ ] **Dashboard Component**: MarketExpectationsDashboard.tsx
+    - [ ] Display current Fed Funds rate and FOMC projections
+    - [ ] Show model predictions from best historical analogue
+    - [ ] Visualize yield curve shape and inversion signals
+    - [ ] Calculate and display divergence metrics
+  - [ ] **Future Upgrade Path**: CME FedWatch API integration ($25/month)
+    - [ ] Real-time market-implied probabilities for each FOMC meeting
+    - [ ] Professional dislocation scoring when ready
+  - **Trading Value**: Shows where Fed expectations diverge from model predictions using free FRED data
+
+- [ ] **Cross-Asset Fed Playbook**: Multi-asset performance tracking during Fed cycles
+  - [ ] USD/DXY performance patterns during historical analogues
+  - [ ] Bond yield curve evolution (2Y/10Y steepening/flattening)
+  - [ ] Equity sector rotation analysis (XLF vs XLK vs TLT performance)
+  - [ ] Credit spread behavior during Fed cycles (HYG, LQD)
+  - [ ] Commodity responses (gold, oil) to Fed policy changes
+  - **Trading Value**: Enables systematic cross-asset positioning around Fed expectations
+
+- [ ] **FOMC Volatility Analysis**: Options market dynamics during Fed events
+  - [ ] Historical volatility surface changes during policy transitions
+  - [ ] Options positioning and dealer hedging flow analysis
+  - [ ] Intraday reaction patterns to Fed communications
+  - [ ] Vol-adjusted trade recommendations for different Fed scenarios
+  - **Trading Value**: Critical for options-based Fed trades and risk management
+
+- [ ] **Economic Surprise Integration**: Real-time data flow analysis
+  - [ ] Live economic surprise indices (Citi, Bloomberg) integration
+  - [ ] Real-time Fed communication sentiment analysis
+  - [ ] Nowcasting models for key Fed metrics
+  - [ ] Dynamic adjustment of Fed expectations based on incoming data
+  - **Trading Value**: Allows real-time adjustment of Fed views based on data flow
+
+- [ ] **Trade Recommendation Engine**: Actionable trading signals
+  - [ ] Specific trade ideas with entry/exit levels based on analogues
+  - [ ] Risk-adjusted position sizing recommendations
+  - [ ] Hedging strategies for different Fed scenarios
+  - [ ] Probability-weighted P&L scenario analysis
+  - **Trading Value**: Converts analysis into concrete trade recommendations
+
+- [ ] **Backtesting & P&L Attribution**: Strategy validation framework
+  - [ ] Historical performance of Fed expectation trades
+  - [ ] P&L attribution from different Fed scenarios
+  - [ ] Sharpe ratios of Fed-driven trading strategies
+  - [ ] Maximum drawdown analysis during Fed regime changes
+  - **Trading Value**: Essential for risk management and strategy validation
+
+#### Phase 11: Original User Experience Features
 - ✅ **Period Exclusion Controls**: User control over historical focus areas - **DONE**
 - ✅ **Economic Regime Templates**: Pre-built scenarios for common use cases - **DONE**
 - 🎯 **Interactive Target Selection**: Analyze any historical period as comparison base

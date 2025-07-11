@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { render, Box, Text } from 'ink';
 import yargs, { Arguments } from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { fetchAllEconomicData } from './services/api';
-import { initDatabase, insertData, getAllData } from './services/database';
+import { fetchAllEconomicData, fetchFOMCProjections } from './services/api';
+import { initDatabase, insertData, getAllData, initProjectionsTable, insertProjections } from './services/database';
 import { findAnalogues, getLastNMonths, getTargetPeriod } from './services/analysis';
 import { calculateCorrelationMatrix, CorrelationMatrix } from './services/correlation';
 import { ScenarioParams, HistoricalAnalogue, WeightedIndicator, EconomicDataPoint } from './types';
@@ -37,10 +37,27 @@ const App = ({ command, params, indicators }: AppProps) => {
           setLoading(true);
           setStatus('Initializing database...');
           await initDatabase();
+          await initProjectionsTable();
+          
           setStatus(`Fetching data for ${Object.keys(FRED_SERIES).length} series from FRED API...`);
           const data = await fetchAllEconomicData(params.apiKey as string);
-          setStatus('Inserting data into the database...');
+          setStatus('Inserting economic data into the database...');
           await insertData(data);
+          
+          setStatus('Fetching FOMC projections (Fed dot plot) data...');
+          try {
+            const projections = await fetchFOMCProjections(params.apiKey as string);
+            if (projections.length > 0) {
+              setStatus(`Inserting ${projections.length} FOMC projections...`);
+              await insertProjections(projections);
+            } else {
+              setStatus('No FOMC projections found (this is normal if FRED hasn\'t updated yet)');
+            }
+          } catch (projError) {
+            // FOMC projections might not be available for all periods
+            console.warn('Warning: Could not fetch FOMC projections:', projError);
+          }
+          
           setStatus('Data update complete.');
         } catch (e) {
           setError(e instanceof Error ? e.message : String(e));

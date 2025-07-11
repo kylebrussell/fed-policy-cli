@@ -399,7 +399,57 @@ These enhancements directly address the core value proposition of understanding 
 2. **Month 11**: Economic regime templates for common use cases
 3. **Month 12**: Interactive target period selection capabilities
 
-### **Phase 12** 🚀 **ADVANCED FEATURES** (Future Vision)
+### **Phase 12** 💹 **MARKET EXPECTATIONS DASHBOARD** (Trading Integration - v5.0)
+
+**Core Mission**: Transform from Fed policy analysis tool into professional macro trading platform with market integration.
+
+**Implementation Approach**: Hybrid database design with FRED-only MVP escalating to paid market data.
+
+1. **Month 13-14**: **FRED-Only Market Expectations MVP** (`src/services/marketExpectations.ts`)
+   - **Database Updates**:
+     - Add Treasury yields (DGS3MO, DGS6MO, DGS1, DGS2) to existing economic_data table
+     - Create new `fomc_projections` table for dot plot data (FEDTARMD series)
+     - Files: Update `database.ts`, `constants.ts`, `api.ts`
+   
+   - **Market Expectations Service**:
+     - Fetch FOMC projections (median, high, low) for 2025-2027
+     - Calculate rough implied rates from Treasury yield curve
+     - Compare model predictions vs Fed dot plot
+     - Files: New `marketExpectations.ts` service
+   
+   - **Dashboard Component** (`src/components/MarketExpectationsDashboard.tsx`):
+     ```
+     Fed Policy Expectations vs Model
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     Current Fed Funds Rate: 4.33%
+     
+     FOMC Projections (Dot Plot):
+     2025: 3.9% (3.4%-4.4% range)
+     2026: 2.9% (2.4%-3.9% range)
+     
+     Model Prediction: 3.83% (-10bps)
+     Yield Curve Signal: Inverted
+     ```
+
+2. **Month 15-16**: **Enhanced Analytics & Trading Signals**
+   - Forward rate calculations from Treasury curve
+   - Historical divergence analysis (Fed vs Model accuracy)
+   - Basic trading signal generation
+   - Confidence intervals and probability distributions
+
+3. **Month 17-18**: **Professional Market Data Integration** ($25/month upgrade)
+   - CME FedWatch API integration for true market probabilities
+   - Meeting-by-meeting probability distributions
+   - Real-time dislocation scoring
+   - Professional divergence analysis
+
+### **Phase 13** 🌐 **CROSS-ASSET FED PLAYBOOK** (Multi-Asset Trading)
+
+1. **Month 19-20**: Track USD, bonds, equities during historical analogues
+2. **Month 21-22**: Sector rotation analysis and credit spread behavior
+3. **Month 23-24**: Commodity responses and volatility patterns
+
+### **Phase 14** 🚀 **ADVANCED FEATURES** (Future Vision)
 
 1. **Year 2+**: Machine learning integration for pattern recognition
 2. **Year 2+**: Natural language query interface
@@ -410,4 +460,6 @@ These enhancements directly address the core value proposition of understanding 
 - **Phase 9**: Interactive policy exploration, real-time simulations, comprehensive dashboards
 - **Phase 10**: No overlapping results, meaningful chart variation, diverse historical coverage
 - **Phase 11**: 50% increase in query diversity, user-friendly templates, historical context integration
-- **Phase 12**: AI-enhanced predictions, conversational interface, proactive alerts
+- **Phase 12**: Market expectations integration, trading signals, Fed vs market divergence analysis
+- **Phase 13**: Cross-asset performance tracking, systematic positioning framework
+- **Phase 14**: AI-enhanced predictions, conversational interface, proactive alerts

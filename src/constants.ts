@@ -9,6 +9,20 @@ export const FRED_SERIES = {
   GDPC1: { name: 'Real GDP', type: 'yoy_quarterly', frequency: 'quarterly' },
   T10Y2Y: { name: '10-2 Year Treasury Spread', type: 'level', frequency: 'daily' },
   ICSA: { name: 'Initial Claims', type: 'level', frequency: 'weekly' },
+  // Treasury yields for market expectations
+  DGS3MO: { name: '3-Month Treasury', type: 'level', frequency: 'daily' },
+  DGS6MO: { name: '6-Month Treasury', type: 'level', frequency: 'daily' },
+  DGS1: { name: '1-Year Treasury', type: 'level', frequency: 'daily' },
+  DGS2: { name: '2-Year Treasury', type: 'level', frequency: 'daily' },
+};
+
+// FOMC projection series for Fed dot plot data
+export const FOMC_PROJECTION_SERIES = {
+  FEDTARMD: { name: 'Fed Funds Rate Projection - Median', type: 'projection' },
+  FEDTARRM: { name: 'Fed Funds Rate Projection - Range Midpoint', type: 'projection' },
+  FEDTARRL: { name: 'Fed Funds Rate Projection - Range Low', type: 'projection' },
+  FEDTARRH: { name: 'Fed Funds Rate Projection - Range High', type: 'projection' },
+  FEDTARMDLR: { name: 'Fed Funds Rate Projection - Longer Run Median', type: 'projection' },
 };
 
 // FRED API base URL
