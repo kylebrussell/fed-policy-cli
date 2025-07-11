@@ -18,7 +18,10 @@
       "Bash(find:*)",
       "Bash(chmod:*)",
       "Bash(fed-policy-cli)",
-      "Bash(fed-policy-cli market-expectations:*)"
+      "Bash(fed-policy-cli market-expectations:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm version:*)"
     ],
     "deny": []
   }
