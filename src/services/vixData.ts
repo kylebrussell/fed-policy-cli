@@ -16,8 +16,9 @@ export interface VolatilityContext {
 }
 
 /**
- * Service for fetching real VIX and volatility data
- * Uses Alpha Vantage free API for VIX data
+ * Service for fetching real volatility data
+ * Uses VIXY ETF as a proxy for VIX movements and volatility patterns
+ * Focus on relative changes and patterns rather than absolute VIX levels
  */
 export class VIXDataService {
   private readonly ALPHA_VANTAGE_KEY: string;
@@ -27,12 +28,12 @@ export class VIXDataService {
     this.ALPHA_VANTAGE_KEY = process.env.ALPHA_VANTAGE_API_KEY || '';
     
     if (!this.ALPHA_VANTAGE_KEY) {
-      console.warn('Warning: ALPHA_VANTAGE_API_KEY not set. VIX data will be unavailable.');
+      console.warn('Warning: ALPHA_VANTAGE_API_KEY not set. Volatility data will be unavailable.');
     }
   }
   
   /**
-   * Get current VIX level
+   * Get current volatility level (using VIXY volatility as proxy)
    */
   async getCurrentVIX(): Promise<number> {
     if (!this.ALPHA_VANTAGE_KEY) {
@@ -41,17 +42,17 @@ export class VIXDataService {
     }
     
     try {
-      const data = await this.fetchVIXData();
-      const latestData = this.getLatestDataPoint(data);
-      return latestData?.value || this.getEstimatedVIX();
+      const data = await this.fetchVIXYData();
+      const volatility = await this.calculateVIXYVolatility(data);
+      return volatility || this.getEstimatedVIX();
     } catch (error) {
-      console.warn('Failed to fetch VIX data:', error);
+      console.warn('Failed to fetch volatility data:', error);
       return this.getEstimatedVIX();
     }
   }
   
   /**
-   * Get VIX historical data for context
+   * Get volatility historical data for context (using VIXY patterns)
    */
   async getVIXHistory(days: number = 30): Promise<VIXDataPoint[]> {
     if (!this.ALPHA_VANTAGE_KEY) {
@@ -59,10 +60,10 @@ export class VIXDataService {
     }
     
     try {
-      const data = await this.fetchVIXData();
-      return this.processVIXHistory(data, days);
+      const data = await this.fetchVIXYData();
+      return await this.processVIXYVolatilityHistory(data, days);
     } catch (error) {
-      console.warn('Failed to fetch VIX history:', error);
+      console.warn('Failed to fetch volatility history:', error);
       return this.getEstimatedVIXHistory(days);
     }
   }
@@ -91,10 +92,11 @@ export class VIXDataService {
   }
   
   /**
-   * Fetch VIX data from Alpha Vantage
+   * Fetch VIXY ETF data from Alpha Vantage
+   * VIXY tracks VIX futures and provides excellent volatility pattern proxy
    */
-  private async fetchVIXData(): Promise<any> {
-    const url = `${this.BASE_URL}?function=TIME_SERIES_DAILY&symbol=VIX&apikey=${this.ALPHA_VANTAGE_KEY}`;
+  private async fetchVIXYData(): Promise<any> {
+    const url = `${this.BASE_URL}?function=TIME_SERIES_DAILY&symbol=VIXY&apikey=${this.ALPHA_VANTAGE_KEY}`;
     
     const response = await fetch(url);
     if (!response.ok) {
@@ -115,46 +117,87 @@ export class VIXDataService {
   }
   
   /**
-   * Get latest VIX data point from API response
+   * Calculate current volatility from VIXY price movements
+   * Uses rolling volatility of VIXY returns as proxy for VIX level
    */
-  private getLatestDataPoint(data: any): VIXDataPoint | null {
+  private async calculateVIXYVolatility(data: any, lookbackDays: number = 20): Promise<number> {
     const timeSeries = data['Time Series (Daily)'];
-    if (!timeSeries) return null;
+    if (!timeSeries) return 18; // Default VIX estimate
     
-    const dates = Object.keys(timeSeries).sort().reverse();
-    if (dates.length === 0) return null;
+    const dates = Object.keys(timeSeries).sort().reverse().slice(0, lookbackDays + 1);
+    if (dates.length < 2) return 18;
     
-    const latestDate = dates[0];
-    const dayData = timeSeries[latestDate];
+    // Calculate daily returns
+    const returns: number[] = [];
+    for (let i = 1; i < dates.length; i++) {
+      const todayClose = parseFloat(timeSeries[dates[i-1]]['4. close']);
+      const yesterdayClose = parseFloat(timeSeries[dates[i]]['4. close']);
+      const dailyReturn = (todayClose - yesterdayClose) / yesterdayClose;
+      returns.push(dailyReturn);
+    }
     
-    return {
-      date: latestDate,
-      value: parseFloat(dayData['4. close']),
-      change: parseFloat(dayData['4. close']) - parseFloat(dayData['1. open']),
-      changePercent: ((parseFloat(dayData['4. close']) - parseFloat(dayData['1. open'])) / parseFloat(dayData['1. open'])) * 100
-    };
+    // Calculate annualized volatility
+    const mean = returns.reduce((sum, r) => sum + r, 0) / returns.length;
+    const variance = returns.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / returns.length;
+    const volatility = Math.sqrt(variance) * Math.sqrt(252) * 100; // Annualized %
+    
+    // Scale to VIX-like levels (VIXY vol typically 2-3x higher than VIX level)
+    // Typical VIXY vol ~50-60%, VIX ~15-20, so ratio ~3
+    const vixEquivalent = Math.max(10, Math.min(50, volatility / 2.8));
+    
+    return Math.round(vixEquivalent * 10) / 10;
   }
   
   /**
-   * Process VIX history from API data
+   * Process VIXY volatility history for context analysis
    */
-  private processVIXHistory(data: any, days: number): VIXDataPoint[] {
+  private async processVIXYVolatilityHistory(data: any, days: number): Promise<VIXDataPoint[]> {
     const timeSeries = data['Time Series (Daily)'];
     if (!timeSeries) return [];
     
-    const dates = Object.keys(timeSeries).sort().reverse().slice(0, days);
+    const allDates = Object.keys(timeSeries).sort().reverse();
+    const history: VIXDataPoint[] = [];
     
-    return dates.map(date => {
-      const dayData = timeSeries[date];
-      return {
-        date,
-        value: parseFloat(dayData['4. close']),
-        change: parseFloat(dayData['4. close']) - parseFloat(dayData['1. open']),
-        changePercent: ((parseFloat(dayData['4. close']) - parseFloat(dayData['1. open'])) / parseFloat(dayData['1. open'])) * 100
-      };
-    });
+    // Calculate rolling 10-day volatility for each day
+    for (let i = 0; i < Math.min(days, allDates.length - 10); i++) {
+      const endDate = allDates[i];
+      const startIndex = i + 10;
+      
+      if (startIndex >= allDates.length) break;
+      
+      // Get 10-day price series for this date
+      const windowDates = allDates.slice(i, startIndex + 1);
+      const returns: number[] = [];
+      
+      for (let j = 0; j < windowDates.length - 1; j++) {
+        const todayClose = parseFloat(timeSeries[windowDates[j]]['4. close']);
+        const yesterdayClose = parseFloat(timeSeries[windowDates[j + 1]]['4. close']);
+        const dailyReturn = (todayClose - yesterdayClose) / yesterdayClose;
+        returns.push(dailyReturn);
+      }
+      
+      // Calculate volatility for this window
+      const mean = returns.reduce((sum, r) => sum + r, 0) / returns.length;
+      const variance = returns.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / returns.length;
+      const volatility = Math.sqrt(variance) * Math.sqrt(252) * 100;
+      const vixEquivalent = Math.max(10, Math.min(50, volatility / 2.8));
+      
+      // Calculate daily change
+      const todayVol = vixEquivalent;
+      const yesterdayVol = history.length > 0 ? history[history.length - 1].value : vixEquivalent;
+      
+      history.push({
+        date: endDate,
+        value: Math.round(todayVol * 10) / 10,
+        change: todayVol - yesterdayVol,
+        changePercent: ((todayVol - yesterdayVol) / yesterdayVol) * 100
+      });
+    }
+    
+    return history.reverse(); // Return in chronological order
   }
   
+
   /**
    * Calculate VIX percentile over historical period
    */
@@ -217,26 +260,26 @@ export class VIXDataService {
   }
   
   /**
-   * Check if VIX is available (API key configured)
+   * Check if volatility data is available (API key configured)
    */
   isVIXAvailable(): boolean {
     return !!this.ALPHA_VANTAGE_KEY;
   }
   
   /**
-   * Get VIX data source status
+   * Get volatility data source status
    */
   getDataSourceStatus(): { available: boolean; source: string; message?: string } {
     if (this.ALPHA_VANTAGE_KEY) {
       return {
         available: true,
-        source: 'Alpha Vantage API'
+        source: 'VIXY volatility patterns via Alpha Vantage'
       };
     } else {
       return {
         available: false,
-        source: 'Estimated values',
-        message: 'Set ALPHA_VANTAGE_API_KEY for real VIX data'
+        source: 'Estimated volatility values',
+        message: 'Set ALPHA_VANTAGE_API_KEY for real volatility patterns'
       };
     }
   }
