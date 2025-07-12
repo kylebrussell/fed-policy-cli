@@ -16,32 +16,22 @@
 
 # Fed Policy CLI
 
-> **Professional options trading intelligence from Fed policy analysis**
+A command-line tool for analyzing Federal Reserve policy patterns and their market impact. Find historical analogues to current economic conditions, track FOMC meeting timing, and explore how different assets have performed during similar Fed policy periods.
 
-Transform Fed policy analysis into institutional-grade volatility trading strategies with sophisticated options analytics. Built for macro traders, hedge funds, and professional options traders who need FOMC event intelligence and systematic volatility strategies.
+**What it's good at**: Historical pattern matching, Fed meeting tracking, seeing what happened before  
+**What it's not**: Real-time trading system, guaranteed predictions, professional trading advice
 
-## Features
+## What it does
 
-### 📊 **FOMC Volatility Intelligence** *(New in v5.2)*
-- **⚡ Volatility Surface Analysis** - Historical vol tracking with pre/post FOMC pattern recognition
-- **🎯 Options Strategy Automation** - Intelligent straddle/strangle/calendar selection based on vol environment
-- **⏰ FOMC Timing Precision** - T-3 to T+2 optimal entry/exit windows for volatility trades
-- **🔍 Options Flow Analysis** - Put/call skew, dealer positioning, and unusual activity detection
-- **📈 Reaction Pattern Intelligence** - 85% accuracy predicting immediate FOMC vol spikes
+**📈 Historical Pattern Matching**: Compare current economic conditions to past periods and see what the Fed did next
 
-### 🎯 **Professional Trading Intelligence**
-- **📊 Specific Entry/Exit Levels** - Technical analysis with support/resistance and volatility-based pricing
-- **💰 Risk-Adjusted Position Sizing** - Kelly Criterion, volatility-adjusted, and risk parity methodologies
-- **🛡️ Comprehensive Hedging Strategies** - Duration, curve, volatility, and cross-asset hedge recommendations
-- **📈 Monte Carlo P&L Analysis** - 1000+ simulations with Value-at-Risk calculations
-- **🔍 Backtesting Framework** - Historical performance validation with Sharpe ratios and regime analysis
+**📊 FOMC Meeting Tracker**: See when the next Fed meeting is and get context on volatility patterns around Fed events
 
-### 🏛️ **Fed Policy Analysis**
-- **📊 Historical Analogue Analysis** - Find similar Fed policy periods using weighted economic indicators
-- **💹 Market vs Fed Expectations** - Analyze yield curve inversions and rate divergences
-- **🌍 Cross-Asset Fed Playbook** - Multi-asset performance during Fed cycles (bonds, equities, commodities, currencies)
-- **🎮 Policy Simulator** - What-if scenario modeling for Fed policy changes
-- **📈 Trading Signals** - Professional signals with confidence scores and risk analysis
+**💹 Market Expectations**: Compare what markets are pricing vs what the Fed has projected
+
+**🎯 Cross-Asset Analysis**: See how bonds, stocks, and other assets performed during similar Fed policy periods
+
+**📉 Trading Ideas**: Get specific trade recommendations with entry/exit levels based on historical patterns
 
 ## Installation
 
@@ -74,12 +64,14 @@ npx fed-policy-cli market-expectations
 npx fed-policy-cli cross-asset-analysis
 ```
 
-## API Keys Required
+## Setup (Optional API Keys)
 
-- **FRED API Key** (free): Get from [FRED Economic Data](https://fred.stlouisfed.org/docs/api/api_key.html)
-- **Alpha Vantage API Key** (optional, for ETF data): Get from [Alpha Vantage](https://www.alphavantage.co/support/#api-key)
+The tool works without any setup, but you can get more data with free API keys:
 
-Store in `.env` file:
+- **FRED API Key** (free): Get from [FRED Economic Data](https://fred.stlouisfed.org/docs/api/api_key.html) for economic data
+- **Alpha Vantage API Key** (free): Get from [Alpha Vantage](https://www.alphavantage.co/support/#api-key) for real VIX data
+
+Put them in a `.env` file:
 ```
 FRED_API_KEY=your_fred_api_key_here
 ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key_here
@@ -87,88 +79,55 @@ ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key_here
 
 ## Commands
 
-### Data Management
-- `update-data` - Fetch latest economic data from FRED API
-- `list-templates` - Show available economic analysis templates
+**Getting Started**
+- `update-data` - Download latest economic data (do this first)
+- `list-templates` - See available economic analysis templates
 
-### Analysis
-- `analyze` - Find historical Fed policy analogues
-- `correlate` - Calculate correlation matrices for economic indicators
-- `market-expectations` - Analyze market vs Fed rate expectations
-- `cross-asset-analysis` - Multi-asset performance during Fed cycles
-- `simulate` - Interactive Fed policy scenario simulator
+**Main Analysis**
+- `analyze` - Find historical periods similar to today
+- `market-expectations` - See what markets expect vs Fed projections
+- `cross-asset-analysis` - How assets performed in similar periods
+- `correlate` - See how economic indicators relate to each other
 
-### 📊 **FOMC Volatility Trading** *(New in v5.2)*
-- `fomc-volatility` - Professional volatility analysis with options strategies and timing
-- `vol-surface` - Analyze volatility surfaces around FOMC events with pattern recognition
-- `options-flow` - Track dealer positioning, skew, and unusual options activity
-- `vol-strategies` - Generate automated straddle/strangle recommendations with optimal timing
+**FOMC & Volatility**
+- `fomc-volatility` - When's the next Fed meeting and what's volatility doing
+- `trading-recommendations` - Get specific trade ideas based on historical patterns
 
-### 🎯 **Professional Trading** *(New in v5.1)*
-- `trading-recommendations` - Generate institutional-grade trade recommendations with specific levels
-- `position-sizing` - Calculate risk-adjusted position sizes using multiple methodologies
-- `hedging-strategies` - Generate comprehensive hedge recommendations for Fed scenarios
-- `scenario-analysis` - Run Monte Carlo simulations with Value-at-Risk calculations
-- `backtest` - Historical performance validation with regime analysis
+**Advanced**
+- `simulate` - Interactive what-if scenario modeling
+- `backtest` - See how strategies performed historically
 
-### Examples
+## Example Usage
+
 ```bash
-# Stagflation analysis
-npx fed-policy-cli analyze --template stagflation-hunt --months 12
+# Find periods similar to high inflation + unemployment (stagflation)
+npx fed-policy-cli analyze --template stagflation-hunt
 
-# Custom indicator analysis
-npx fed-policy-cli analyze --indicator UNRATE:0.5 --indicator CPIAUCSL:0.5
+# See what the market expects vs Fed projections
+npx fed-policy-cli market-expectations
 
-# Correlation analysis
-npx fed-policy-cli correlate --indicators UNRATE CPIAUCSL GDPC1
-
-# Cross-asset analysis with Alpha Vantage data
-npx fed-policy-cli cross-asset-analysis --alpha-vantage-key YOUR_KEY
-
-# Generate institutional trading recommendations
-npx fed-policy-cli trading-recommendations
-
-# FOMC volatility analysis with options strategies
+# When's the next FOMC meeting and what's volatility doing?
 npx fed-policy-cli fomc-volatility
 
-# Analyze volatility surface around FOMC events
-npx fed-policy-cli vol-surface --asset SPY --days-to-fomc 5
+# How did assets perform during similar Fed policy periods?
+npx fed-policy-cli cross-asset-analysis
 
-# Track options flow and dealer positioning
-npx fed-policy-cli options-flow --unusual-activity
-
-# Run backtesting on historical Fed cycles
-npx fed-policy-cli backtest --strategy fed-cycle --start-date 2020-01-01
+# Get specific trade ideas based on historical patterns
+npx fed-policy-cli trading-recommendations
 ```
 
 ## Data Sources
 
-- **FRED (Federal Reserve Economic Data)** - 100+ economic indicators
-- **FOMC Projections** - Fed dot plot data
-- **Alpha Vantage** - ETF and cross-asset data
-- **Treasury Yield Curves** - Daily yield data
-- **Volatility Surfaces** - Historical implied volatility data (SPY, TLT, VIX, MOVE)
-- **Options Flow** - Put/call ratios, open interest, and dealer positioning
+- **Federal Reserve** - Economic data and FOMC meeting schedule
+- **Alpha Vantage** - Market data including VIX (with free API key)
+- **Treasury Department** - Yield curve data
 
-## Use Cases
+## Who might find this useful
 
-### 📊 **Options Trading Professionals** *(New in v5.2)*
-- **Volatility Traders** - Systematic FOMC vol strategies with precise timing windows
-- **Options Market Makers** - Dealer flow analysis and gamma hedging intelligence
-- **Hedge Fund Vol Desks** - Professional vol surface analysis and pattern recognition
-- **Risk Management** - Options-based Fed event hedging with cost optimization
-
-### 🏦 **Institutional Trading**
-- **Macro Trading Desks** - Specific trade recommendations with entry/exit levels and position sizing
-- **Hedge Fund Strategies** - Fed cycle positioning with comprehensive risk management
-- **Asset Management** - Multi-asset portfolio allocation during Fed regime changes
-- **Risk Management** - Value-at-Risk analysis, stress testing, and drawdown monitoring
-
-### 📊 **Professional Analysis**
-- **Economic Research** - Fed policy impact studies with historical validation
-- **Portfolio Construction** - Correlation-adjusted position sizing and sector rotation
-- **Trading Strategy Development** - Backtested performance metrics and regime analysis
-- **Client Advisory** - Professional-grade Fed policy intelligence and market positioning
+- **Traders** - See what happened to assets during similar Fed policy periods
+- **Researchers** - Explore historical Fed policy patterns and market reactions  
+- **Students** - Learn about Fed policy through historical examples
+- **Anyone curious** about Fed policy and market relationships
 
 ## Available Templates
 
@@ -207,50 +166,17 @@ npx fed-policy-cli backtest --strategy fed-cycle --start-date 2020-01-01
 
 ## Example Output
 
-### Welcome Screen
+### Getting Started
+
 ```bash
 $ npx fed-policy-cli
 ```
 
-```
-███████╗███████╗██████╗     ██████╗  ██████╗ ██╗     ██╗ ██████╗██╗   ██╗
-██╔════╝██╔════╝██╔══██╗    ██╔══██╗██╔═══██╗██║     ██║██╔════╝╚██╗ ██╔╝
-█████╗  █████╗  ██║  ██║    ██████╔╝██║   ██║██║     ██║██║      ╚████╔╝
-██╔══╝  ██╔══╝  ██║  ██║    ██╔═══╝ ██║   ██║██║     ██║██║       ╚██╔╝
-██║     ███████╗██████╔╝    ██║     ╚██████╔╝███████╗██║╚██████╗   ██║
-╚═╝     ╚══════╝╚═════╝     ╚═╝      ╚═════╝ ╚══════╝╚═╝ ╚═════╝   ╚═╝
+Shows you the main commands and quick start options. Try:
 
-████████╗██████╗  █████╗ ██████╗ ███████╗██████╗
-╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗
-   ██║   ██████╔╝███████║██║  ██║█████╗  ██████╔╝
-   ██║   ██╔══██╗██╔══██║██║  ██║██╔══╝  ██╔══██╗
-   ██║   ██║  ██║██║  ██║██████╔╝███████╗██║  ██║
-   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝  v1.0.2
-
- Macro Trading Intelligence from Fed Policy Analysis
-
- Transform economic data into actionable trading insights by analyzing
- historical Fed policy analogues
-
- Quick Start Commands:
-
- 📊  Analyze Current Conditions - Find historical Fed policy analogues
-         $ npx fed-policy-cli analyze --template balanced-economic
-
- 💹  Market vs Fed Expectations - Yield curve & divergence analysis
-         $ npx fed-policy-cli market-expectations
-
- 🌍  Cross-Asset Playbook - Multi-asset Fed cycle positioning
-         $ npx fed-policy-cli cross-asset-analysis
-
- 🎮  Policy Simulator - What-if Fed scenario modeling
-         $ npx fed-policy-cli simulate
-
- 🎯  Trading Recommendations - Institutional-grade trade ideas with levels
-         $ npx fed-policy-cli trading-recommendations
-
- 💡 First time? Run npx fed-policy-cli update-data to fetch latest economic data
-```
+- `npx fed-policy-cli analyze --template stagflation-hunt` - Find periods similar to high inflation
+- `npx fed-policy-cli market-expectations` - See market vs Fed expectations  
+- `npx fed-policy-cli fomc-volatility` - When's the next Fed meeting?
 
 ### Market Expectations Analysis
 ```bash
@@ -294,126 +220,61 @@ Market Rate: 3.86% | Fed Target: 3.40%
 Last updated: 2025-07-10 | Data: FRED Treasury yields + FOMC dot plot projections
 ```
 
-### FOMC Volatility Analysis *(New in v5.2)*
+### FOMC Meeting Tracker
+
+See when the next Fed meeting is and get context on volatility:
+
 ```bash
 $ npx fed-policy-cli fomc-volatility
 ```
 
 ```
-═══════════════ FOMC VOLATILITY ANALYSIS ═══════════════════
-
-📊 Vol Surface Status - Next FOMC: Dec 18, 2024 (T-14 days)
+🏛️ Next FOMC Meeting: Dec 17, 2024 (T-14 days)
+Expected Move: ~1.8% (based on current volatility)
 
 ──── Current Volatility Levels ────
-SPY 30-day IV: 18.2% (+2.1% vs 30-day avg)
-TLT 30-day IV: 12.4% (+1.8% vs 30-day avg)  
-VIX: 16.8 (vs 14.2 pre-FOMC avg)
+SPY Volatility: 18.2% (+2.1% vs 30-day avg)
+TLT Volatility: 10.9% (+1.3% vs 30-day avg)
 
-──── Historical FOMC Vol Patterns ────
-Avg Vol Spike: +4.2% day-of FOMC
-Peak Timing: 2:15 PM (15 min post-statement)
-Vol Decay: 50% within 2 days, 80% within 1 week
+──── FOMC Timing Context ────
+Days to FOMC: 14
+Current Phase: PRE-FOMC  
+Vol Regime: NORMAL
 
-──── Options Positioning ────
-SPY Put/Call Ratio: 1.24 (elevated vs 0.98 baseline)
-Large OI Concentrations: 
-  • SPY 440P Dec20: 45K contracts
-  • TLT 95C Dec20: 12K contracts
+Recommended Focus: General volatility monitoring
 
-──── Vol-Adjusted Trade Recommendations ────
-
-1. SPY STRADDLE - PRE-FOMC VOL PLAY
-   Strategy: Buy 445 straddle expiring Dec 20
-   Entry IV: 18.2% | Break-even moves: ±3.2%
-   Target: Exit day-after FOMC (IV crush play)
-   Historical Success: 68% (12 of 18 trades profitable)
-
-   ⏰ Volatility Timing:
-   Entry Window: T-2 to T-1 days before FOMC
-   Exit Window: T+0 within 2 hours of statement
-   Rationale: Low IV suggests vol expansion opportunity during FOMC
-
-   🛡️ Risk Analysis:
-   Cost: $1,450 | Max Risk: $1,450 | Max Profit: Unlimited
-
-2. TLT VOL HEDGE - DURATION PROTECTION  
-   Strategy: Buy TLT 95 puts (3% OTM)
-   Rationale: Rate volatility protection
-   Cost: 0.8% of position | Max Protection: 12%
-
-──── Expected FOMC Reaction Patterns ────
-SPY Most Likely Patterns:
-1. IMMEDIATE SPIKE (0-15 minutes) - 85% frequency
-   Quick directional play, exit within 30 minutes
-2. REVERSAL (1-4 hours) - 52% frequency  
-   Fade large initial moves, target 50% retracement
-
-──── Volatility Environment Summary ────
-Current Regime: PRE-FOMC COMPRESSION
-Optimal Strategy: BUY VOL (Build positions for FOMC)
-Risk Level: ░░░░░░░░ ELEVATED
+Note: Enhanced options analysis available with market data subscriptions
 ```
 
-### Professional Trading Recommendations
+### Trading Ideas
+
+Get specific trade ideas based on historical patterns:
+
 ```bash
 $ npx fed-policy-cli trading-recommendations
 ```
 
 ```
-═══════════════════════════════════════════════════════════════
-═══════════════ TRADING RECOMMENDATIONS ═══════════════════════
-═══════════════════════════════════════════════════════════════
+──── TRADING RECOMMENDATIONS ────
 
 1. TLT - BUY (Bonds)
-   Expected Return: +12.3%  |  Confidence: 78%  |  Timeframe: 6-12 months
+   Expected Return: +12.3% | Confidence: 78% | 6-12 months
    
-   📊 Entry/Exit Strategy:
-   Entry Range: $94.50 - $96.20 (WAIT FOR PULLBACK)
+   Entry: $94.50 - $96.20 (wait for pullback)
    Stop Loss: $91.80
-   Profit Target: $107.50
+   Target: $107.50
    
-   💰 Position Sizing:
-   Portfolio Weight: 8.5%  |  Method: VOLATILITY ADJUSTED
-   Risk Budget: 1.3%  |  Max Position: $850K
-   
-   ⚠️ Risk Factors:
-   • Interest rate sensitivity - Fed policy changes affect pricing
-   • Duration risk - Long-term rate exposure
-   
-   🎯 Scenario Analysis:
-   Most Likely (65%): Fed Easing (+8.2%)
-   Range: -4.1% to +18.7% across 4 scenarios
-   
-   🛡️ Hedging Strategy:
-   • TLT Put Options (20% hedge, 1.2% cost)
-   • 2s10s Steepener (15% hedge, 0.8% cost)
+   Why: Similar Fed easing periods showed 8.2% avg returns
+   Risk: Duration sensitivity to rate changes
 
-2. SPY - HOLD (Equities)
-   Expected Return: +6.1%  |  Confidence: 62%  |  Timeframe: 3-9 months
+2. SPY - HOLD (Equities)  
+   Expected Return: +6.1% | Confidence: 62% | 3-9 months
    
-   📊 Entry/Exit Strategy:
-   Entry: $445.20 (IMMEDIATE)
+   Entry: $445.20 (immediate)
    Stop Loss: $425.80
-   Profit Target: $472.60
+   Target: $472.60
    
-   💰 Position Sizing:
-   Portfolio Weight: 12.3%  |  Method: RISK PARITY
-   Risk Budget: 2.1%  |  Max Position: $1.23M
-
-═══════════════════════════════════════════════════════════════
-═══════════════ PORTFOLIO SUMMARY ═══════════════════════════
-═══════════════════════════════════════════════════════════════
-
-Total Allocation: 20.8%  |  Expected Return: +8.4%  |  Avg Confidence: 70%
-
-Asset Class Breakdown:
-Bonds: 8.5%
-Equities: 12.3%
-
-Risk Metrics:
-Portfolio VaR (95%): -2.3%
-Max Drawdown: -8.7%
-Sharpe Ratio: 1.42
+   Why: Mixed signals in current environment
 ```
 
 ## License
