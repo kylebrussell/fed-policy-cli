@@ -17,6 +17,7 @@ import { FOMCReactionService } from './services/fomcReactions';
 import { VolAdjustedTradingService } from './services/volAdjustedTrading';
 import { FedCalendarService } from './services/fedCalendar';
 import { VIXDataService } from './services/vixData';
+import { ExportService } from './services/export';
 import { ScenarioParams, HistoricalAnalogue, WeightedIndicator, EconomicDataPoint, VolAdjustedRecommendation, FOMCEvent, VolatilityProfile, OptionsFlow, FOMCReactionPattern } from './types';
 import { FRED_SERIES, ECONOMIC_TEMPLATES } from './constants';
 import LoadingSpinner from './components/Spinner';
@@ -171,7 +172,43 @@ const App = ({ command, params, indicators }: AppProps) => {
           const results = findAnalogues(allData, targetScenario, scenarioParams, params.top as number);
           setAnalogues(results);
           setCurrentData(targetScenario);
-          setStatus('Analysis complete.');
+          
+          // Handle exports if requested
+          if (params['export-csv'] || params['export-json']) {
+            const exportService = new ExportService();
+            const exportMetadata = {
+              targetPeriod: params['target-period'] as string | undefined,
+              months: params.months as number | undefined,
+              template: params.template as string | undefined,
+              topN: params.top as number
+            };
+            
+            try {
+              if (params['export-csv']) {
+                const csvPath = typeof params['export-csv'] === 'string' && params['export-csv'] !== '' 
+                  ? params['export-csv'] 
+                  : exportService.generateFilename('csv');
+                await exportService.ensureExportDirectory(csvPath);
+                await exportService.exportToCSV(results, indicators, targetScenario, csvPath, exportMetadata);
+                setStatus(`Analysis complete. CSV exported to: ${csvPath}`);
+              }
+              
+              if (params['export-json']) {
+                const jsonPath = typeof params['export-json'] === 'string' && params['export-json'] !== '' 
+                  ? params['export-json'] 
+                  : exportService.generateFilename('json');
+                await exportService.ensureExportDirectory(jsonPath);
+                await exportService.exportToJSON(results, indicators, targetScenario, jsonPath, exportMetadata);
+                const csvMessage = params['export-csv'] ? '' : 'Analysis complete. ';
+                setStatus(`${csvMessage}JSON exported to: ${jsonPath}`);
+              }
+            } catch (exportError) {
+              setError(`Export failed: ${exportError instanceof Error ? exportError.message : String(exportError)}`);
+              return;
+            }
+          } else {
+            setStatus('Analysis complete.');
+          }
         } catch (e) {
           setError(e instanceof Error ? e.message : String(e));
         }
@@ -581,6 +618,16 @@ yargs(hideBin(process.argv))
         type: 'string',
         alias: 'e',
       })
+      .option('export-csv', {
+        describe: 'Export analysis results to CSV file (optionally specify path)',
+        type: 'string',
+        alias: 'csv',
+      })
+      .option('export-json', {
+        describe: 'Export analysis results to JSON file (optionally specify path)',
+        type: 'string',
+        alias: 'json',
+      })
       .check((argv) => {
         // Either template or indicator must be specified
         if (!argv.template && !argv.indicator) {
@@ -764,6 +811,8 @@ yargs(hideBin(process.argv))
   .help()
   .example('$0 analyze -T stagflation-hunt -m 12', 'Use the stagflation template for analysis.')
   .example('$0 analyze -i UNRATE:0.5 -i CPIAUCSL:0.5 -m 12', 'Analyze with 50/50 weighting on unemployment and inflation.')
+  .example('$0 analyze -T balanced-economic --export-csv', 'Analyze and export results to CSV.')
+  .example('$0 analyze -T financial-crisis --export-json analysis.json', 'Export to specific JSON file.')
   .example('$0 correlate -i UNRATE CPIAUCSL GDPC1', 'Calculate the correlation between unemployment, inflation, and GDP growth.')
   .example('$0 simulate -T balanced-economic', 'Launch interactive policy simulator.')
   .example('$0 market-expectations', 'Analyze yield curve and Fed vs market rate expectations.')

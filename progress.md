@@ -210,18 +210,18 @@ This document tracks the development progress against the implementation plan. C
         - [ ] Better error messages for API failures
 
 * [ ] **7.4: User Experience Enhancements (Medium Priority)**
-    * [ ] **Export Functionality**
-        - [ ] Add CSV export option for analysis results
-        - [ ] Implement JSON export for programmatic usage
-        - [ ] Include analysis metadata in exports
+    * [x] **Export Functionality** ✅ **COMPLETED**
+        - [x] Add CSV export option for analysis results (--export-csv flag)
+        - [x] Implement JSON export for programmatic usage (--export-json flag)
+        - [x] Include analysis metadata in exports (timestamps, parameters, tool version)
     * [ ] **Better Duplicate Handling**
         - [ ] Improve logic to avoid showing nearly identical recent periods
         - [ ] Add minimum time gap between similar results
         - [ ] Enhance similarity scoring algorithm
-    * [ ] **Custom Date Range Support**
-        - [ ] Allow analysis of specific historical periods
-        - [ ] Support custom target scenarios (not just recent months)
-        - [ ] Add date range validation
+    * [x] **Custom Date Range Support** ✅ **COMPLETED**
+        - [x] Allow analysis of specific historical periods (via --target-period flag)
+        - [x] Support custom target scenarios (not just recent months)
+        - [x] Add date range validation with format checking
 
 * [ ] **7.5: Performance & Technical Debt (Low Priority)**
     * [ ] **Performance Optimizations**
@@ -302,12 +302,12 @@ This document tracks the development progress against the implementation plan. C
     * [x] **Working Demonstrations**: Verified templates find historically accurate periods (1970s stagflation, 2008 crisis, policy cycles)
     * **Impact**: ✅ **MAJOR SUCCESS** - Makes tool accessible to users without deep economic modeling expertise through pre-built research scenarios
 
-* [ ] **9.3: Interactive Target Period Selection** (`src/cli.tsx`, `src/services/analysis.ts`)
-    * [ ] **Target Period Logic**: Support analysis of any historical period as comparison base
-    * [ ] **CLI Interface**: Add `--target-period` flag accepting date ranges
-    * [ ] **Historical Comparison**: Enable "what if" analysis between any two periods
-    * [ ] **Period Validation**: Ensure target periods have sufficient data quality
-    * **Impact**: Enables flexible historical period comparisons and "what if" scenarios
+* [x] **9.3: Interactive Target Period Selection** (`src/cli.tsx`, `src/services/analysis.ts`)
+    * [x] **Target Period Logic**: Support analysis of any historical period as comparison base
+    * [x] **CLI Interface**: Add `--target-period` flag accepting date ranges (format: "YYYY-MM to YYYY-MM")
+    * [x] **Historical Comparison**: Enable "what if" analysis between any two periods
+    * [x] **Period Validation**: Ensure target periods have sufficient data quality with proper error messages
+    * **Impact**: ✅ **COMPLETED** - Enables flexible historical period comparisons and "what if" scenarios for analyzing specific historical events like the 2008 financial crisis or Volcker era
 
 * [ ] **9.4: Historical Context Enrichment** (`src/components/AnalogueReportView.tsx`, `src/constants.ts`)
     * [ ] **Economic Events Database**: Add recession dates, policy shifts, crisis markers

@@ -23,7 +23,12 @@
       "Bash(git commit:*)",
       "Bash(npm version:*)",
       "Bash(npm publish:*)",
-      "Bash(npx fed-policy-cli:*)"
+      "Bash(npx fed-policy-cli:*)",
+      "Bash(git push:*)",
+      "Bash(npm run cli:*)",
+      "Bash(fed-policy-cli analyze:*)",
+      "Bash(npm link:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

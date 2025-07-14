@@ -103,6 +103,15 @@ ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key_here
 # Find periods similar to high inflation + unemployment (stagflation)
 npx fed-policy-cli analyze --template stagflation-hunt
 
+# Analyze a specific historical period (e.g., 2008 financial crisis)
+npx fed-policy-cli analyze --target-period "2008-01 to 2009-12" --template financial-crisis
+
+# Export analysis results to CSV
+npx fed-policy-cli analyze --template balanced-economic --export-csv results.csv
+
+# Export to JSON for programmatic use
+npx fed-policy-cli analyze --template inflation-regime --export-json analysis.json
+
 # See what the market expects vs Fed projections
 npx fed-policy-cli market-expectations
 
@@ -128,6 +137,39 @@ npx fed-policy-cli trading-recommendations
 - **Researchers** - Explore historical Fed policy patterns and market reactions  
 - **Students** - Learn about Fed policy through historical examples
 - **Anyone curious** about Fed policy and market relationships
+
+## Analysis Features
+
+### Historical Period Analysis
+Analyze any specific historical period instead of just recent months:
+
+```bash
+# Analyze the 2008 financial crisis
+npx fed-policy-cli analyze --target-period "2008-01 to 2009-12" --template financial-crisis
+
+# Study the Volcker era inflation fight
+npx fed-policy-cli analyze --target-period "1979-01 to 1982-12" --template inflation-regime
+
+# Compare dot-com bubble to today
+npx fed-policy-cli analyze --target-period "1999-01 to 2001-12" --template balanced-economic
+```
+
+### Export Results
+Export your analysis results for further processing or sharing:
+
+```bash
+# Export to CSV (auto-generated filename)
+npx fed-policy-cli analyze --template stagflation-hunt --export-csv
+
+# Export to specific CSV file
+npx fed-policy-cli analyze --template financial-crisis --export-csv analysis-results.csv
+
+# Export to JSON with full metadata
+npx fed-policy-cli analyze --template balanced-economic --export-json data.json
+
+# Export both formats
+npx fed-policy-cli analyze --template recession-early-warning --export-csv --export-json
+```
 
 ## Available Templates
 
